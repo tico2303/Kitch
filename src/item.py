@@ -6,7 +6,6 @@ class Item(object):
         self.ingredientList = ingredientList
         self.image = image
 
-
     def addIngredient
 
 

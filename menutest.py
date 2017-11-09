@@ -1,37 +1,46 @@
 #!/usr/bin/python
+from src.menu import *
 
-#import sys
-#sys.path.append("/home/roshi/code/chefapp/src/test")
+def Test_Menu():
+    plateList = ["Plate1", "Plate2"]
+    menu = Menu(name = "Mexican Food")
+    menu.addPlates(plateList)
 
-from src.menu import Menu, MenuInfo
-
-def Test_createMenu(plateList):
-    menuInfo =MenuInfo("My First Menu", "This is my first menu",None)
-    menu = Menu(menuInfo)
-    for plate in plateList:
-        menu.addPlate(plateList)
-    return menu
+    print("name: ", menu.get("name"))
+    if menu.get("name") == "Mexican Food" and len(menu.plates) > 0:
+        print "Test Passed"
 
 def Test_Item():
-    item1_info = Info()
-    item1_info.setName("Rice")
-    item1_info.setDescription("The rice from the indian hills")
-    item1_info.setPrice(1.50)
-    item1_info.setIngredients(["Rice", "salt"])
-    item1_info.setServingSize(3)
-    item1 = Item(item1_info) 
+    item1 = Item()
+    item1.setName("Rice")
+    item1.setDescription("The rice from the indian hills")
+    item1.setPrice(1.50)
+    item1.setIngredients(["Rice", "salt"])
+    item1.setServingSize(3)
 
-    plat1_info = Info()
-    plat1_info.setName("Spanish Rice Plate with salmon")
-    plat1_info.setPrice(20.00)
+    if item1.get("name") == "Rice": 
+        print "Test Passed"
 
+def Test_plate():
+    Rice = Item(name="Rice", price=2.00)
+    Tacos = Item(name="Tacos", price=4.50)
+    plate = Plate()
+    plate.setName("Rice and Tacos")
+    plate.setDescription("Beef Street Tacos with Spanish Rice.")
+    itemList = [Rice, Tacos]
+    #plate.setPrice(10.01)
+    #plate.addItems(itemList)
+    plate.setPriceByItems()
+    print plate.get("name")
+    print plate.get("price")
+    print plate.get("itemList")
+
+    if plate.get("name") is not None:
+        print "Test Passed"
 
 
 if __name__=="__main__":
 
-    newMenu = Test_createMenu(["plate1", "plate2", "plate3", "plate4"])
-
-    print("name: ", newMenu.menuInfo.name)
-    print("description: ", newMenu.menuInfo.description)
-
-
+    Test_Item()
+    Test_plate()
+    Test_Menu()
