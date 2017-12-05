@@ -1,6 +1,5 @@
-
 class Plate(object):
-    def __init__(self, name = None):
+    def __init__(self, name=None):
         self.name = name
         self.price = None
         self.items = None
@@ -11,12 +10,11 @@ class Plate(object):
     def add_item(self, item):
         self.items.append(item)
 
-
 class Item(object):
-   def __init__(self,name):
+    def __init__(self,name):
         self.name = name
         self.price = None
-        
+
     def get_price(self):
         return self.price
 
