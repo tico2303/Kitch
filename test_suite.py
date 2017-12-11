@@ -8,12 +8,19 @@ def testPlateNoItems():
     plate = Plate("Wings")
     assert plate.name == "Wings"
     assert plate.price == None
-    assert plate.items == None
+    assert plate.items == []
 
 def testChefMakeOnePlate():
     chefbob = Chef()
     chefbob.add_plate(plate_name = "Wings")
     assert chefbob.get_plate("Wings").name == "Wings"
+
+def testAddItemsToPlate():
+    chefbob = Chef()
+    chefbob.add_plate("Wings")
+    chefbob.get_plate("Wings").add_item(Item(name="Boneless Wing",price=2.50))
+    chefbob.get_plate("Wings").add_item(Item(name="Boneless Wing",price=2.50))
+    assert ( len(chefbob.plates["Wings"].items) == 2)
 
 def testChefMultiplePlates():
     chefbob = Chef()
@@ -85,7 +92,11 @@ def testMarketTransaction():
     assert( len(chef1.orders) == 1)
     assert( len(chef2.orders) == 0)
 
-    
+def testCartPrice():
+    market, chef1, chef2 = setUpMarket()
+    patron = Patron() 
+    market.buy(patron,platesOnMarket[0] )
+    assert(patron.cart.get_price() == 5)
 
 testPlateNoItems()
 testChefMakeOnePlate()
@@ -93,4 +104,12 @@ testChefMultiplePlates()
 testMarketOffer()
 testSamePlateOffer()
 testMarketTransaction()
-#testMarketBuy()
+testAddItemsToPlate()
+
+
+print "Passed!"
+
+
+
+
+
