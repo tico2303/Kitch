@@ -1,8 +1,12 @@
-class Cart(object):
-    def __init__(self):
-       self.order = [] 
+from market import Market
 
-    def add_to_cart(self,item):
+class Cart(object):
+    def __init__(self,chef):
+       self.order = [] 
+       self.market = Market()
+       self.chef = chef
+
+    def add(self,item):
         self.order.append(item)
 
     def remove(self,item):
@@ -17,3 +21,7 @@ class Cart(object):
 
     def get_order(self):
         return self.order
+    
+    def purchase(self):
+        for item in self.order:
+            market.buy(self.chef,item) 

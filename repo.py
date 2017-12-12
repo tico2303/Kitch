@@ -1,19 +1,24 @@
 import pickle
+import os
 
-class Repo(object):
+class Repository(object):
     def __init__(self,filename):
         self.filename = filename
+        if filename not in os.listdir("."):
+            os.system("touch "+filename )
 
-    def getData(self):
+    def get_data(self):
         try:
             return pickle.load(open(self.filename,'rb')) 
         except EOFError:
-            return []
+            return {}
 
-    def saveData(self,data):
+    def save_data(self,data):
         pickle.dump(data,open(self.filename, 'wb'))
 
 
 
+
 if __name__ == "__main__":
-   pass 
+    r = Repository("market.pkl")
+    print r.get_data()
