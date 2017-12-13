@@ -7,7 +7,7 @@ class Plate(object):
     def get_price(self):
         return self.price
 
-    def calculate_price(self):
+    def set_price_by_items(self):
         price = 0
         for item in self.items:
             price += item.get_price()
@@ -15,6 +15,7 @@ class Plate(object):
 
     def add_item(self, item):
         self.items.append(item)
+
 
     def set_price(self, price):
         self.price = price
