@@ -1,10 +1,8 @@
 from plate import *
 from cart import Cart
 from market import Market
-from mykitch import MyKitch
-from chef import Chef
+#from chef import Chef
 import os
-from repo import MarketRepository
 from models import *
 from locationservices import LocationService
 
@@ -244,8 +242,23 @@ def add_plate_to_kitch(sesh):
     sesh.commit()
 
 def find_chef_by_name(sesh, chef_name):
-    return session.query(Chef).filter_by(name=chef_name).first()
+    return sesh.query(Chef).filter_by(name=chef_name).first()
 
+def test_order(sesh):
+    chef = find_chef_by_name(sesh,"Cheffy Chef")
+    seller = find_chef_by_name(sesh,"Netties")
+    chef2 = find_chef_by_name(sesh,"Lil Chef Xennie")
+
+    #print "Query result before adding order: ", sesh.query(Order).first()
+    order = Order(buyer_id=chef.id,plate_id=seller.kitch.plates[0].id)
+    print("seller.kitch.plates: ", seller.kitch.plates[0])
+    #order.plates.append(seller.kitch.plates[0])
+    order2 = Order(buyer_id=chef2.id, plate_id=seller.kitch.plates[0].id)
+    sesh.add(order2)
+    sesh.add(order)
+    sesh.commit()
+    print("First Row of Order:")
+    print sesh.query(Order).all()
 
 def testLocation(session):
     source_addr = session.query(Chef).filter_by(name="Netties").first().address
@@ -282,13 +295,14 @@ testCartPrice()
 testRepo()
 """
 sesh = setUpSession()
-testLocation(sesh)
-#create_Chef_kitch_cart(sesh)
-#create_plates(sesh)
-#add_plate_to_kitch(sesh)
+#testLocation(sesh)
+create_Chef_kitch_cart(sesh)
+create_plates(sesh)
+add_plate_to_kitch(sesh)
+test_order(sesh)
 #testDBModels()
 
-testMarketTransaction()
+#testMarketTransaction()
 """
 testPatronCreateOrder()
 #10

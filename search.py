@@ -1,4 +1,4 @@
-
+from models import *
 # search and filter
 class Filter(object):
 
@@ -14,12 +14,19 @@ class Filter(object):
 class Search(object):
     def __init__(self):
         self.filter = Filter()
+        self.session = self._setUpSession()
 
-    def _find_n_nearest_chefs(self,chef):
-        pass
+    def _setUpSession(self):
+        engine = create_engine(DBFILE)
+        Base.metadata.create_all(engine)
+        Session = sessionmaker()
+        Session.configure(bind=engine)
+        session = Session()
+        return session
+    def find(self, obj, **kwargs):
+        print kwargs
+        print kwargs.keys()[0]
 
-    def _find_plate_by_chef(self,plate):
-        pass
-
-    def find(self, *args, **kwargs):
-        pass
+if __name__ == "__main__":
+    s = Search()
+    s.find("Chef",name="Cody")
