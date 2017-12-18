@@ -4,15 +4,20 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean
 from sqlalchemy import create_engine, Sequence, Table
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from flask_login import UserMixin
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_DIR = os.path.join(BASE_DIR,"/Kitch")
 sys.path.insert(0,BASE_DIR)
 DBFILE = "sqlite:///kitch.db".format(DB_DIR)
 
-# print "DB_DIR: ", DB_DIR
-# print "BASE_DIR: ", BASE_DIR
-# print "dbfile: ", DBFILE
+def setUpSession():
+    engine = create_engine(DBFILE)
+    Base.metadata.create_all(engine)
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+    session = Session()
+    return session
 
 Base = declarative_base()
 
@@ -35,14 +40,6 @@ class Item(Base):
     name = Column(String(250), nullable=False)
     price = Column(Float)
 
-# Order Many(customers) to Many(kitchens)
-# and   Many(kitchens) to Many(customers)
-"""
-MarketOrder = Table("marketorder",
-    Column("id",Integer,primary_key=True,unique=True),
-    Column("buyer_id", Integer, ForeignKey('cart.id')),
-    Column("seller_id",Integer, ForeignKey('kitch.id')))
-"""
 #Many(plates) to 1(kitch) 
 class Plate(Base):
     __tablename__ = 'plate'
@@ -88,25 +85,30 @@ class Cart(Base):
         return "Cart(id=%s)"%(self.id)
 
 # Chef 1 to 1 relation with cart and kitch
-class Chef(Base):
+class Chef(UserMixin,Base):
     __tablename__='chef'
     id = Column(Integer, Sequence('chef_seq_id',start=1, increment=1),primary_key=True )
     name = Column(String(250), nullable=False)
-    password = Column(String(250))
-    email = Column(String(250) )
-    address = Column(String(500))
+    email = Column(String(250), nullable=False, unique=True )
+    password = Column(String(250),nullable=False)
+    street = Column(String(500), nullable=False)
+    city = Column(String(500), nullable=False)
+    state = Column(String(500), nullable=False)
+    zip_code = Column(String(500), nullable=False)
+    apt_number = Column(String(500)),
+    phone_number = Column(String(500))
     cart = relationship(Cart, uselist=False, backref='chef')
     kitch =relationship(Kitch, uselist=False,backref='chef')
 
     def __repr__(self):
         if self.cart and self.kitch:
-            return "Chef(name=%s, cartid=%s, kitchid=%s)"%(self.name, self.cart.id, self.kitch.id)
+            return "Chef(name=%s, email=%s, cartid=%s, kitchid=%s)"%(self.name, self.email, self.cart.id, self.kitch.id)
         elif self.cart and not self.kitch:
             return "Chef(name=%s, cartid=%s)"%(self.name, self.cart.id)
         elif self.kitch and not self.cart:
             return "Chef(name=%s, kitchid=%s)"%(self.name, self.kitch.id)
         else:
-            return "Chef(name=%s)"%(self.name)
+            return "Chef(name=%s, email=%s )"%(self.name, self.email )
 
 if __name__ == "__main__":
     pass

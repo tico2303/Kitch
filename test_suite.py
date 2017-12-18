@@ -177,10 +177,11 @@ def create_Chef_kitch_cart(session):
     addr2 = "1600 Amphitheatre Parkway, Mountain View, CA"
     addr3 = "900 University Ave, Riverside, CA"
     addr4 = "1133 W Blaine St, Riverside, CA"
-    chef1 = Chef(name="Chef Don Juan",cart=Cart(), kitch=Kitch(),address=addr1)
-    chef2 = Chef(name="Cheffy Chef",cart=Cart(), kitch=Kitch(),address=addr2)
-    chef3 = Chef(name="Netties",cart=Cart(), kitch=Kitch(), address=addr3)
-    chef4 = Chef(name="Lil Chef Xennie",cart=Cart(), kitch=Kitch(),address=addr4)
+    
+    chef1 = Chef(name="Chef Don Juan",email="chef_don_juan@gmail.com",cart=Cart(), kitch=Kitch(),address=addr1)
+    chef2 = Chef(name="Cheffy Chef",email="cheffy_chef@gmail.com",cart=Cart(), kitch=Kitch(),address=addr2)
+    chef3 = Chef(name="Netties",email="netties@gmail.com",cart=Cart(), kitch=Kitch(), address=addr3)
+    chef4 = Chef(name="Lil Chef Xennie", email="lil_chef_xennie@gmail.com",cart=Cart(), kitch=Kitch(),address=addr4)
     session.add(chef1)
     session.add(chef2)
     session.add(chef3)
