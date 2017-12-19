@@ -1,6 +1,7 @@
 import os
+import datetime
 import sys
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean, Date, ARRAY, func, DateTime
 from sqlalchemy import create_engine, Sequence, Table
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -46,7 +47,6 @@ class Plate(Base):
     id = Column(Integer, Sequence('plate_seq_id',start=1, increment=1),primary_key=True, unique=True)
     kitch_id = Column(Integer, ForeignKey('kitch.id'))
     items = relationship("Item", backref="plate")
-    buyers = relationship("Chef",secondary="order",backref="plate")
     name = Column(String(250))
     is_public = Column(Boolean,default=False)
 
@@ -57,10 +57,17 @@ class Plate(Base):
 class Order(Base):
     __tablename__ = 'order'
     id = Column(Integer,Sequence('order_seq_id',start=1, increment=1),primary_key=True,unique=True)
+    #A list of integers mapping to the plates ordered, list of plate id's
+    contents = Column(String(250))
+    order_placed = Column(Date, default=datetime.datetime.now())
+    total = Column(Float)
+    delivery_option = Column(String(250))
     buyer_id = Column(Integer, ForeignKey('chef.id'))
-    plate_id = Column(Integer, ForeignKey('plate.id'))
-
     is_delivered = Column(Boolean)
+    order_closed = Column(Date, default=datetime.datetime.now())
+
+    def __repr__(self):
+        return "Order(id=%s, contents=%s, order_placed=%s, total=%s, delivery_option=%s, buyer_id=%s, is_delivered=%s, order_closed=%s)"%(self.id, self.contents, self.order_placed, self.total, self.delivery_option, self.buyer_id, self.is_delivered, self.order_closed)
     #date
 
 #1(kitch) to Many(Plate)
@@ -97,6 +104,7 @@ class Chef(UserMixin,Base):
     zip_code = Column(String(500), nullable=False)
     apt_number = Column(String(500)),
     phone_number = Column(String(500))
+    order = relationship(Order, uselist=False, backref='chef')
     cart = relationship(Cart, uselist=False, backref='chef')
     kitch =relationship(Kitch, uselist=False,backref='chef')
 

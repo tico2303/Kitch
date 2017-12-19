@@ -1,0 +1,15 @@
+{% extends "navbase.html" %}
+{% block content %}
+
+<h1> {{ "%s's Account Called Succesfull"%chef.name }} </h1>
+<ul>
+
+	<li> <a href= {{ url_for("kitch") }}> Your Kitch</a> </li>
+	<li> <a href= {{ url_for("orders") }}>Your Orders</a> </li>
+	<li> <a href= {{ url_for("edit_login") }}>Login & Security</a> </li>
+	<li> <a href= {{ url_for("edit_address") }}>Your Address</a> </li>
+	<li> <a href= {{ url_for("edit_payment_options") }}>Payment Options</a> </li>
+
+</ul>
+
+{% endblock %}

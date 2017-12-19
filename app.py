@@ -67,10 +67,37 @@ def home():
     chefs = session.query(Chef).all()
     return render_template("home.html",chefs=chefs)
 
+@app.route("/account")
+@login_required
+def account():
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
+    return render_template("account.html", chef = chef)
+
+@app.route("/order-history")
+@login_required
+def orders():
+    orders = session.query(Order).all()
+    return render_template("order_history.html", orders=orders)
+
 @app.route("/")
 @app.route("/index")
 def index():
     return render_template("index.html",var="Yes")
+
+@app.route("/edit_address")
+def edit_address():
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
+    return render_template("edit_address.html", chef=chef)
+
+@app.route("/edit_login")
+def edit_login():
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
+    return render_template("edit_login.html", chef=chef)
+
+@app.route("/edit_payment_options")
+def edit_payment_options():
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
+    return render_template("edit_payment_options.html", chef=chef)
 
 @app.route("/search/<filter>", methods=["GET", "POST"])
 def search(filter=None):

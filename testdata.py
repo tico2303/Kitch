@@ -1,4 +1,5 @@
 from models import *
+from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import random
 
@@ -32,6 +33,7 @@ def get_addr_info(filename):
             li.append((street, city, state, zip_code))
         f.close()
     return li
+
 def make_users():
     session = setUpSession()
     addr = get_addr_info("./data/us/or/portland_metro.csv")
@@ -70,6 +72,47 @@ def make_users():
     users = session.query(Chef).filter_by(name="Harry").first()
     print users.name+"."
     print users.password + "."
+
+#COMMENT THESE OUT OR DELETE
+"""
+id = Column(Integer,Sequence('order_seq_id',start=1, increment=1),primary_key=True,unique=True)
+contents = Column(ARRAY(Integer), ForeignKey('plate.id'))
+order_placed = Column(Date)
+total = Column(Float)
+delivery_option = Column(String(250))
+buyer_id = Column(Integer, ForeignKey('chef.id'))
+is_delivered = Column(Boolean)
+order_closed = Column(Date)
+"""
+
+
+
+delivery_options = ["pickup", "delivery", "meet"]
+
+def make_orders():
+    session = setUpSession() 
+
+    for k in range(20):
+        plates_to_order = []
+        for i in range(5): 
+            order = Order(contents = str(random.randint(1,5000)) +  " , " + str(random.randint(1,5000)), 
+                    total = 5.00,
+                    delivery_option = delivery_options[random.randint(0,len(delivery_options)-1)],
+                    buyer_id = random.randint(1,20),
+                    is_delivered = False
+                    )
+            print order.order_placed
+            session.add(order)
+    session.commit()
+
+
+
 #get_name_pass("./data/names_pass.csv")
 #get_addr_info("./data/us/or/portland_metro.csv")
 make_users()
+make_orders()
+
+
+
+
+
