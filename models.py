@@ -47,6 +47,7 @@ class Item(Base):
     price = Column(Float)
     plates = relationship('Plate', secondary=items, backref='items', lazy='dynamic')
 
+
 #Many(plates) to 1(kitch) 
 class Plate(Base):
     __tablename__ = 'plate'

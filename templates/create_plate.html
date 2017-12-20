@@ -20,9 +20,15 @@ Create Plate
 			{{ form.hidden_tag() }}
 			<!-- Create the username password and remember-me forms -->
 			{{ wtf.form_field(form.plate_name) }}
-			{{ wtf.form_field(form.items) }}
-			{{ wtf.form_field(form.price) }}
-			{{ wtf.form_field(form.description) }}
+			{{ wtf.form_field(form.item_one) }}
+			{{ wtf.form_field(form.price_one) }}
+			{{ wtf.form_field(form.description_one) }}
+			{{ wtf.form_field(form.item_two) }}
+			{{ wtf.form_field(form.price_two) }}
+			{{ wtf.form_field(form.description_two) }}
+			{{ wtf.form_field(form.item_three) }}
+			{{ wtf.form_field(form.price_three) }}
+			{{ wtf.form_field(form.description_three) }}
 			<button class="btn btn-lg btn-primary btn-block" type="submit">Create Plate</button>
 		</form>
 	</div>

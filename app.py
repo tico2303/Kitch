@@ -31,7 +31,6 @@ def kitch():
 def plates():
     user = session.query(Chef).filter_by(id=current_user.id).first()
     kitch = session.query(Kitch).filter_by(chef_id = user.id).first()
-    print kitch
     plates = session.query(Plate).filter_by(kitch_id = kitch).all()
     return render_template("plates.html", chef=user,plates=plates)
 
@@ -45,6 +44,9 @@ def create_plate():
     form = CreatePlateForm()
     if form.validate_on_submit():
         plate = Plate(kitch_id=kitch, name=form.plate_name.data, is_public=True) 
+        plate.items.append(Item(name=form.item_one.data, price=form.price_one.data))
+        plate.items.append(Item(name=form.item_two.data, price=form.price_two.data))
+        plate.items.append(Item(name=form.item_three.data, price=form.price_three.data))
         session.add(plate)
         session.commit()
         return redirect(url_for('plates'))

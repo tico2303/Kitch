@@ -21,8 +21,15 @@ class RegisterForm(FlaskForm):
 
 class CreatePlateForm(FlaskForm):
 	plate_name = StringField("Plate Name", validators=[InputRequired(), Length(min=1, max=50)])
-        items = StringField("Items")
-        price = StringField("Price", validators=[InputRequired(), Length(min=1,max=50)])
-        description = StringField("Description")
+        item_one = StringField("Item One Name")
+        price_one = StringField("Price", validators=[InputRequired(), Length(min=1,max=50)])
+        description_one = StringField("Description")
 
+        item_two = StringField("Item Two Name")
+        price_two = StringField("Price", validators=[InputRequired(), Length(min=1,max=50)])
+        description_two = StringField("Description")
+
+        item_three = StringField("Item Three Name")
+        price_three = StringField("Price", validators=[InputRequired(), Length(min=1,max=50)])
+        description_three = StringField("Description")
 
