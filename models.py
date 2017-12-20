@@ -33,41 +33,55 @@ class Cart:
 class Order:
     pass
 
-#Item Many(Items) to 1(plate) relation
+items = Table('items',
+                Base.metadata,
+                Column('item_id', Integer, ForeignKey('item.id')),
+                Column('plate_id', Integer, ForeignKey('plate.id'))
+                )
+                
 class Item(Base):
     __tablename__ = 'item'
     id = Column(Integer, Sequence('item_seq_id',start=1, increment=1), primary_key=True, unique=True)
     plate_id = Column(Integer, ForeignKey('plate.id'))
     name = Column(String(250), nullable=False)
     price = Column(Float)
+    plates = relationship('Plate', secondary=items, backref='items', lazy='dynamic')
 
 #Many(plates) to 1(kitch) 
 class Plate(Base):
     __tablename__ = 'plate'
     id = Column(Integer, Sequence('plate_seq_id',start=1, increment=1),primary_key=True, unique=True)
     kitch_id = Column(Integer, ForeignKey('kitch.id'))
-    items = relationship("Item", backref="plate")
     name = Column(String(250))
+    #price = Column(Float)
     is_public = Column(Boolean,default=False)
 
     def __repr__(self):
-        return "Pate(name=%s, is_public=%s,items=%s)"%(self.name,
+        return "Plate(name=%s, is_public=%s,items=%s)"%(self.name,
                 self.is_public, [str(item.name)+"," for item in self.items])
+
+order_contents = Table('order_contents', 
+                    Base.metadata,
+                    Column('order_id', Integer, ForeignKey('order.id')),
+                    Column('plate_id', Integer, ForeignKey('plate.id'))
+                    )
 
 class Order(Base):
     __tablename__ = 'order'
     id = Column(Integer,Sequence('order_seq_id',start=1, increment=1),primary_key=True,unique=True)
-    #A list of integers mapping to the plates ordered, list of plate id's
-    contents = Column(String(250))
     order_placed = Column(Date, default=datetime.datetime.now())
     total = Column(Float)
     delivery_option = Column(String(250))
     buyer_id = Column(Integer, ForeignKey('chef.id'))
+    #seller_id = Column(Integer, ForeignKey('chef.id'))
     is_delivered = Column(Boolean)
     order_closed = Column(Date, default=datetime.datetime.now())
+    plates = relationship('Plate', secondary = order_contents, backref='orders')
+
+
 
     def __repr__(self):
-        return "Order(id=%s, contents=%s, order_placed=%s, total=%s, delivery_option=%s, buyer_id=%s, is_delivered=%s, order_closed=%s)"%(self.id, self.contents, self.order_placed, self.total, self.delivery_option, self.buyer_id, self.is_delivered, self.order_closed)
+        return "Order(id=%s, plates=%s, order_placed=%s, total=%s, delivery_option=%s, buyer_id=%s, is_delivered=%s, order_closed=%s)"%(self.id, self.plates, self.order_placed, self.total, self.delivery_option, self.buyer_id, self.is_delivered, self.order_closed)
     #date
 
 #1(kitch) to Many(Plate)

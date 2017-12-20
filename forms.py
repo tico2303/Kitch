@@ -19,6 +19,10 @@ class RegisterForm(FlaskForm):
 	apt_number = StringField("apt number", validators=[InputRequired()])
 	phone_number = StringField("phone number", validators=[InputRequired()])
 
-
+class CreatePlateForm(FlaskForm):
+	plate_name = StringField("Plate Name", validators=[InputRequired(), Length(min=1, max=50)])
+        items = StringField("Items")
+        price = StringField("Price", validators=[InputRequired(), Length(min=1,max=50)])
+        description = StringField("Description")
 
 

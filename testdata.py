@@ -95,13 +95,12 @@ def make_orders():
     for k in range(20):
         plates_to_order = []
         for i in range(5): 
-            order = Order(contents = str(random.randint(1,5000)) +  " , " + str(random.randint(1,5000)), 
+            order = Order( 
                     total = 5.00,
                     delivery_option = delivery_options[random.randint(0,len(delivery_options)-1)],
                     buyer_id = random.randint(1,20),
                     is_delivered = False
                     )
-            print order.order_placed
             session.add(order)
     session.commit()
 

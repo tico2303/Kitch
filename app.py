@@ -1,6 +1,6 @@
 from flask import Flask,render_template, redirect, url_for, request
 from models import *
-from forms import LoginForm, RegisterForm
+from forms import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_sqlalchemy import SQLAlchemy
@@ -20,10 +20,47 @@ session = setUpSession()
 def load_user(user_id):
     return session.query(Chef).filter_by(id=user_id).first()
 
+@login_required
 @app.route('/kitch', methods=["GET","POST"])
 def kitch():
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
+    return render_template("kitch.html", chef=chef)
+
+@login_required
+@app.route('/plates')
+def plates():
     user = session.query(Chef).filter_by(id=current_user.id).first()
-    return "<h1> %s's Kitch Called Successfully. </h1> "%(user.name)
+    kitch = session.query(Kitch).filter_by(chef_id = user.id).first()
+    print kitch
+    plates = session.query(Plate).filter_by(kitch_id = kitch).all()
+    return render_template("plates.html", chef=user,plates=plates)
+
+
+@login_required
+@app.route('/create_plate', methods = ["GET", "POST"])
+def create_plate():
+    user = session.query(Chef).filter_by(id=current_user.id).first()
+    kitch = session.query(Kitch).filter_by(chef_id = user.id).first()
+    plates = session.query(Plate).filter_by(kitch_id = kitch).all()
+    form = CreatePlateForm()
+    if form.validate_on_submit():
+        plate = Plate(kitch_id=kitch, name=form.plate_name.data, is_public=True) 
+        session.add(plate)
+        session.commit()
+        return redirect(url_for('plates'))
+    return render_template("create_plate.html", form = form)
+
+@login_required
+@app.route('/menus')
+def menus():
+    user = session.query(Chef).filter_by(id=current_user.id).first()
+    return render_template("menus.html", chef=user)
+
+@login_required
+@app.route('/patron-orders')
+def patron_orders():
+    user = session.query(Chef).filter_by(id=current_user.id).first()
+    return render_template("patron_orders.html", chef=user)
 
 @app.route('/login', methods=["GET","POST"])
 def login():
