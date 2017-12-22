@@ -45,7 +45,7 @@ class Item(Base):
     plate_id = Column(Integer, ForeignKey('plate.id'))
     name = Column(String(250), nullable=False)
     price = Column(Float)
-    plates = relationship('Plate', secondary=items, backref='items', lazy='dynamic')
+    plates = relationship('Plate', secondary=items, backref='items') 
 
 
 #Many(plates) to 1(kitch) 
@@ -78,7 +78,6 @@ class Order(Base):
     total = Column(Float)
     delivery_option = Column(String(250))
     buyer_id = Column(Integer, ForeignKey('chef.id'))
-    #seller_id = Column(Integer, ForeignKey('chef.id'))
     is_delivered = Column(Boolean)
     order_closed = Column(Date, default=datetime.datetime.now())
     plates = relationship('Plate', secondary = order_contents, backref='orders')
@@ -104,11 +103,16 @@ class Kitch(Base):
     def __repr__(self):
         return "Kitch(id=%s)"%(self.id)
 
+cart_contents = Table('cart_contents', 
+                    Base.metadata,
+                    Column('cart_id', Integer, ForeignKey('cart.id')),
+                    Column('plate_id', Integer, ForeignKey('plate.id'))
+                    )
 class Cart(Base):
     __tablename__ = 'cart'
     id = Column(Integer,Sequence('cart_seq_id',start=1, increment=1),primary_key=True)
     chef_id = Column(Integer, ForeignKey('chef.id'))
-
+    plates = relationship('Plate', secondary = cart_contents, backref='cart')
     ### BackRef ###
     # chef
 
@@ -119,6 +123,7 @@ class Cart(Base):
 class Chef(UserMixin,Base):
     __tablename__='chef'
     id = Column(Integer, Sequence('chef_seq_id',start=1, increment=1),primary_key=True )
+    carts = relationship('Cart', backref='chef')
     name = Column(String(250), nullable=False)
     email = Column(String(250), nullable=False, unique=True )
     password = Column(String(250),nullable=False)
@@ -129,18 +134,11 @@ class Chef(UserMixin,Base):
     apt_number = Column(String(500)),
     phone_number = Column(String(500))
     order = relationship(Order, uselist=False, backref='chef')
-    cart = relationship(Cart, uselist=False, backref='chef')
+    #cart = relationship(Cart, uselist=False, backref='chef')
     kitch =relationship(Kitch, uselist=False,backref='chef')
 
     def __repr__(self):
-        if self.cart and self.kitch:
-            return "Chef(name=%s, email=%s, cartid=%s, kitchid=%s)"%(self.name, self.email, self.cart.id, self.kitch.id)
-        elif self.cart and not self.kitch:
-            return "Chef(name=%s, cartid=%s)"%(self.name, self.cart.id)
-        elif self.kitch and not self.cart:
-            return "Chef(name=%s, kitchid=%s)"%(self.name, self.kitch.id)
-        else:
-            return "Chef(name=%s, email=%s )"%(self.name, self.email )
+            return "Chef(name=%s, email=%s)"%(self.name, self.email)
 
 if __name__ == "__main__":
     pass

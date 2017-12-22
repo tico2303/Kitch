@@ -71,7 +71,9 @@ def menus():
 @app.route('/patron-orders')
 def patron_orders():
     user = session.query(Chef).filter_by(id=current_user.id).first()
-    return render_template("patron_orders.html", chef=user)
+    #plates = session.query(Order).filter_by(plate.kitch_id=user.kitch).all()
+    print plates
+    return render_template("patron_orders.html", chef=user, plates=plates)
 
 @app.route('/login', methods=["GET","POST"])
 def login():
