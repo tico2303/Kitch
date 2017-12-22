@@ -27,6 +27,15 @@ def kitch():
     return render_template("kitch.html", chef=chef)
 
 @login_required
+@app.route('/cart', methods=["GET","POST"])
+def cart():
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
+    cart = session.query(Cart).filter_by(chef_id=current_user.id).first()
+    if cart == None: plates = None
+    else: plates = cart.plates
+    return render_template("cart.html", chef=chef, plates=plates)
+
+@login_required
 @app.route('/plates')
 def plates():
     user = session.query(Chef).filter_by(id=current_user.id).first()
@@ -140,22 +149,71 @@ def edit_payment_options():
 
 @app.route("/search/<filter>", methods=["GET", "POST"])
 def search(filter=None):
-    #print("Search param: ", search_term)
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
     print("filter: ", filter)
     if request.method == "POST":
         search_input = request.form["search_input"] 
         print("search input: ", search_input)
-        results = []
+
+        results = {}
+        results["names"] = None
+        results["plates"] = None
+        results["city"] = None
+
         if filter == "Chef":
-            results = session.query(Chef).filter_by(name=search_input).first()
+            names = session.query(Chef).filter_by(name=search_input).first()
+            results["names"] = names
         elif filter == "Location":
-            results = session.query(Chef).filter_by(address=search_input).first()
+            cities = session.query(Chef).filter_by(city=search_input).first()
         elif filter == "Food":
             results = session.query(Chef).filter_by(name=search_input).first()
         else:
-            results = session.query(Chef).filter_by(name=search_input).first()
-        return "<h1> %s </h1>"%(results.address)
+            names = session.query(Chef).filter_by(name=search_input).all() 
+            cities = session.query(Chef).filter_by(city=search_input).all() 
+            plates = session.query(Plate).all()
+
+            results["names"] = names
+            results["plates"] = plates
+            results["cities"] = cities
+
+        return render_template("search_results.html",chef = chef, results=results)
     return "NO POST"
+
+@app.route("/add_plate_to_cart/<plate_id>", methods=["POST"])
+def add_plate_to_cart(plate_id):
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
+    print "Plate id:", plate_id
+    plate = session.query(Plate).filter_by(id=plate_id).first()
+    print plate
+    cart = Cart(chef_id=chef.id)
+    cart.plates.append(plate)
+    session.add(cart)
+    session.commit()
+    return render_template("plate_added_successfully.html", plate=plate)
+
+def get_price(plates):
+    total = 0.0
+    for plate in plates:
+        total = plate.price + total
+    return total
+
+@app.route("/checkout", methods=["POST"])
+def checkout():
+    chef = session.query(Chef).filter_by(id=current_user.id).first()
+    print chef.carts[0].plates
+    order = Order(
+    total = get_price(chef.carts[0].plates[0].items),
+    delivery_option = "delivery",
+    buyer_id = chef.id,
+    is_delivered = False 
+    )
+    for plate in chef.carts[0].plates:
+        order.plates.append(plate)
+
+    session.add(order)
+    session.delete(session.query(Cart).filter_by(chef_id=current_user.id).first())
+    session.commit()
+    return render_template("order_placed_successfully.html")
 
 
 if __name__ == "__main__":

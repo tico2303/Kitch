@@ -1,0 +1,17 @@
+{% extends "navbase.html" %}
+{% block content %}
+
+<h1> {{ "%s's Search Results"%chef.name }} </h1>
+<ul>
+	{% for plate in results["plates"] %}
+	<li> 
+		{{plate.id}}
+		<form action = {{ url_for('add_plate_to_cart', plate_id = plate.id ) }} method="post"> 
+			<input type="submit" name = "Add Plate" value="Add Plate"> {{plate}} </button>
+		</form> 
+	</li>
+
+	{% endfor %}
+</ul>
+
+{% endblock %}

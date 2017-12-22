@@ -86,9 +86,8 @@ order_closed = Column(Date)
 """
 
 
-
 delivery_options = ["pickup", "delivery", "meet"]
-
+"""
 def make_orders():
     session = setUpSession() 
 
@@ -103,13 +102,14 @@ def make_orders():
                     )
             session.add(order)
     session.commit()
+"""
 
 
 
 #get_name_pass("./data/names_pass.csv")
 #get_addr_info("./data/us/or/portland_metro.csv")
 make_users()
-make_orders()
+#make_orders()
 
 
 
