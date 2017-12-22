@@ -38,7 +38,7 @@ items = Table('items',
                 Column('item_id', Integer, ForeignKey('item.id')),
                 Column('plate_id', Integer, ForeignKey('plate.id'))
                 )
-                
+
 class Item(Base):
     __tablename__ = 'item'
     id = Column(Integer, Sequence('item_seq_id',start=1, increment=1), primary_key=True, unique=True)
@@ -54,8 +54,12 @@ class Plate(Base):
     id = Column(Integer, Sequence('plate_seq_id',start=1, increment=1),primary_key=True, unique=True)
     kitch_id = Column(Integer, ForeignKey('kitch.id'))
     name = Column(String(250))
-    #price = Column(Float)
     is_public = Column(Boolean,default=False)
+
+    #### BackRefs ###
+    # items
+    # orders
+    # kitch
 
     def __repr__(self):
         return "Plate(name=%s, is_public=%s,items=%s)"%(self.name,
@@ -79,6 +83,8 @@ class Order(Base):
     order_closed = Column(Date, default=datetime.datetime.now())
     plates = relationship('Plate', secondary = order_contents, backref='orders')
 
+    ### BackRefs ###
+    # chef
 
 
     def __repr__(self):
@@ -91,7 +97,9 @@ class Kitch(Base):
     id = Column(Integer,Sequence('plate_seq_id',start=1, increment=1),primary_key=True,unique=True)
     chef_id = Column(Integer, ForeignKey('chef.id'))
     plates =  relationship("Plate", backref="kitch")
-    #patron_orders = relationship(Order,backref="patron_order", lazy="dynamic")
+
+    ### BackRef ###
+    # chef
 
     def __repr__(self):
         return "Kitch(id=%s)"%(self.id)
@@ -100,8 +108,9 @@ class Cart(Base):
     __tablename__ = 'cart'
     id = Column(Integer,Sequence('cart_seq_id',start=1, increment=1),primary_key=True)
     chef_id = Column(Integer, ForeignKey('chef.id'))
-    #chef = None(backref from Chef)
-    # orders = relationship(Order, backref="order", lazy="dynamic")
+
+    ### BackRef ###
+    # chef
 
     def __repr__(self):
         return "Cart(id=%s)"%(self.id)
@@ -135,18 +144,5 @@ class Chef(UserMixin,Base):
 
 if __name__ == "__main__":
     pass
-    #session = setUpSession()
-    #create_plates(session)
-    #create_Chef_kitch_cart(session)
-    #add_plate_to_kitch(session)
-
-    #xen = find_chef_by_name(session,"Lil Chef Xennie")
-
-    #Tests
-    # create Chef with cart and kitch
-    # create plate with items
-    # kitch holds a list of plates
-    # Cart holds a list of plates that make an order
-    # Order: links buyers Cart to sellers plate in kitch
 
 
