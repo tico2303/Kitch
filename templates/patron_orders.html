@@ -6,11 +6,14 @@
     {% endblock %}
 
     <h1> Patron Orders </h1>
-    {% for order in orders %}
-    <ul>
-        <li>{{order}} </li}
-    {% endfor %}
-
+    {% if patron_orders %}
+        {% for buyer, plate in patron_orders.items() %}
+        <ul>
+            <li>{{buyer.name}} ordered {{plate.name}} </li}
+        {% endfor %}
+    {% else %}
+        <h2> No Patron Orders </h2> 
+    {% endif %}
     </ul>
 
 {% endblock %}

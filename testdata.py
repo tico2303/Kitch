@@ -3,6 +3,39 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import random
 
+PLATENAMES = ["linguinie", "Burger Combo", "My Amazing Plate", "Italian Dish", "Pizza", "Chicken Sandwitch","Soup","Steak and Rice","Jumbo","Sushi"]
+ITEMS = {"linguinie":["noodles", "white sauce"], 
+         "Burger Combo":["burger","fries"], 
+         "My Amazing Plate":["fish","chips"],
+         "Italian Dish":["spaghettie", "meat balls"],
+         "Pizza":["pizza", "bread sticks"],
+         "Chicken Sandwitch":["Chicken", "Sourdough bread"],
+         "Soup":["chicken noodle soup"],
+         "Steak and Rice":["NY steak", "brown rice"],
+         "Jumbo":["cajon jumbo", "shrimp"],
+         "Sushi":["california roll"]}
+
+def make_plates():
+    plateList =[]
+    for i in range(len(PLATENAMES)):
+        plt = Plate(name=PLATENAMES[i])
+        items = ITEMS[PLATENAMES[i]]
+        for j in range(len(items)):
+            i1 = Item(name=items[j], price=random.randint(1,10))
+            plt.items.append(i1)
+        plateList.append(plt)
+    return plateList
+
+def add_plate_to_chefs(sesh,chef_List):
+    PlateList = make_plates()
+    length = min(len(chef_List),len(PlateList))
+    for i in range(length-1):
+        if PlateList[i] not in chef_List[i].plates:
+            print "Adding plate: ", PlateList[i], " to ", chef_List[i]
+            chef_List[i].plates.append(PlateList[i])
+            sesh.add(chef_List[i])
+    sesh.commit()
+
 def get_name_pass(filename):
     li = []
     with open(filename,"r") as f:
@@ -64,7 +97,8 @@ def make_users():
                         state=state,
                         zip_code=zip_code,
                         apt_number="None",
-                        phone_number="555 123 1234"
+                        phone_number="555 123 1234",
+                        cart=Cart()
                         )
         print user
         session.add(user)
@@ -105,9 +139,11 @@ def make_orders():
 """
 
 
-
 #get_name_pass("./data/names_pass.csv")
 #get_addr_info("./data/us/or/portland_metro.csv")
+session = setUpSession()
+chefs = session.query(Chef).all()
+add_plate_to_chefs(session,chefs)
 make_users()
 #make_orders()
 

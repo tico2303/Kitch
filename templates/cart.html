@@ -4,7 +4,7 @@
 <h1> {{ "%s's Cart"%chef.name }} </h1>
 
 <ul>
-	{% if plates != None %}
+	{% if len(plates) > 0 %}
 		{% for plate in plates %}
 		<li> 
 			{{ plate.name }}

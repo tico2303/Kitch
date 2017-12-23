@@ -38,24 +38,19 @@ def cart():
 @login_required
 @app.route('/plates')
 def plates():
-    user = session.query(Chef).filter_by(id=current_user.id).first()
-    kitch = session.query(Kitch).filter_by(chef_id = user.id).first()
-    plates = session.query(Plate).filter_by(kitch_id = kitch).all()
-    return render_template("plates.html", chef=user,plates=plates)
-
+    print "Current_user.plates: ", current_user.plates
+    return render_template("plates.html", chef=current_user,plates=current_user.plates)
 
 @login_required
 @app.route('/create_plate', methods = ["GET", "POST"])
 def create_plate():
-    user = session.query(Chef).filter_by(id=current_user.id).first()
-    kitch = session.query(Kitch).filter_by(chef_id = user.id).first()
-    plates = session.query(Plate).filter_by(kitch_id = kitch).all()
     form = CreatePlateForm()
     if form.validate_on_submit():
-        plate = Plate(kitch_id=kitch, name=form.plate_name.data, is_public=True) 
+        plate = Plate(chef_id=current_user.id, name=form.plate_name.data, is_public=True) 
         plate.items.append(Item(name=form.item_one.data, price=form.price_one.data))
         plate.items.append(Item(name=form.item_two.data, price=form.price_two.data))
         plate.items.append(Item(name=form.item_three.data, price=form.price_three.data))
+        current_user.plates.append(plate)
         session.add(plate)
         session.commit()
         return redirect(url_for('plates'))
@@ -64,22 +59,25 @@ def create_plate():
 @login_required
 @app.route('/menus')
 def menus():
-    user = session.query(Chef).filter_by(id=current_user.id).first()
-    return render_template("menus.html", chef=user)
+    return render_template("menus.html", chef=current_user)
 
 @login_required
 @app.route('/patron-orders')
 def patron_orders():
-    user = session.query(Chef).filter_by(id=current_user.id).first()
-    #plates = session.query(Order).filter_by(plate.kitch_id=user.kitch).all()
-    print plates
-    return render_template("patron_orders.html", chef=user, plates=plates)
+
+    patron_orders = {}
+    for plate in current_user.plates:
+        orders = session.query(Order).filter_by(plate=plate).all()
+        for order in orders:
+            buyer = session.query(Chef).filter_by(id=order.buyer_id).first()
+            plate = session.query(Plate).filter_by(id=order.plate_id).first()
+            patron_orders[buyer] = plate
+    return render_template("patron_orders.html", chef=current_user, patron_orders=patron_orders)
 
 @app.route('/login', methods=["GET","POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        #return '<h1>' + form.username.data  + " " + form.password.data + "</h1>"
         #get first user in query because usernames are unique
         user = session.query(Chef).filter_by(name=form.username.data).first()
         if user:
@@ -120,8 +118,7 @@ def home():
 @app.route("/account")
 @login_required
 def account():
-    chef = session.query(Chef).filter_by(id=current_user.id).first()
-    return render_template("account.html", chef = chef)
+    return render_template("account.html", chef = current_user)
 
 @app.route("/order-history")
 @login_required
@@ -136,22 +133,18 @@ def index():
 
 @app.route("/edit_address")
 def edit_address():
-    chef = session.query(Chef).filter_by(id=current_user.id).first()
-    return render_template("edit_address.html", chef=chef)
+    return render_template("edit_address.html", chef=current_user)
 
 @app.route("/edit_login")
 def edit_login():
-    chef = session.query(Chef).filter_by(id=current_user.id).first()
-    return render_template("edit_login.html", chef=chef)
+    return render_template("edit_login.html", chef=current_user)
 
 @app.route("/edit_payment_options")
 def edit_payment_options():
-    chef = session.query(Chef).filter_by(id=current_user.id).first()
-    return render_template("edit_payment_options.html", chef=chef)
+    return render_template("edit_payment_options.html", chef=current_user)
 
 @app.route("/search/<filter>", methods=["GET", "POST"])
 def search(filter=None):
-    chef = session.query(Chef).filter_by(id=current_user.id).first()
     print("filter: ", filter)
     if request.method == "POST":
         search_input = request.form["search_input"] 
@@ -178,18 +171,16 @@ def search(filter=None):
             results["plates"] = plates
             results["cities"] = cities
 
-        return render_template("search_results.html",chef = chef, results=results)
+        return render_template("search_results.html",chef = current_user, results=results)
     return "NO POST"
 
 @app.route("/add_plate_to_cart/<plate_id>", methods=["POST"])
 def add_plate_to_cart(plate_id):
-    chef = session.query(Chef).filter_by(id=current_user.id).first()
     print "Plate id:", plate_id
     plate = session.query(Plate).filter_by(id=plate_id).first()
-    print plate
-    cart = Cart(chef_id=chef.id)
-    cart.plates.append(plate)
-    session.add(cart)
+    #print plate
+    current_user.cart.plates.append(plate)
+    session.add(current_user)
     session.commit()
     return render_template("plate_added_successfully.html", plate=plate)
 
@@ -201,19 +192,18 @@ def get_price(plates):
 
 @app.route("/checkout", methods=["POST"])
 def checkout():
-    chef = session.query(Chef).filter_by(id=current_user.id).first()
-    print chef.carts[0].plates
-    order = Order(
-    total = get_price(chef.carts[0].plates[0].items),
-    delivery_option = "delivery",
-    buyer_id = chef.id,
-    is_delivered = False 
-    )
-    for plate in chef.carts[0].plates:
-        order.plates.append(plate)
-
-    session.add(order)
-    session.delete(session.query(Cart).filter_by(chef_id=current_user.id).first())
+    for plate in current_user.cart.plates:
+        order = Order(
+            total = get_price(plate.items),
+            delivery_option = "delivery",
+            buyer = current_user,
+            is_delivered = False,
+            plate = plate
+            )
+        session.add(order)
+    cart = session.query(Cart).filter_by(chef_id=current_user.id).first()
+    cart.plates = []
+    session.add(cart)
     session.commit()
     return render_template("order_placed_successfully.html")
 

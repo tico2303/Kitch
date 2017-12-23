@@ -6,12 +6,16 @@
 </ul>
 
     <h1> Your Plates </h1>
-    {% for plate in plates %}
+    {% if plates %}
+        {% for plate in plates %}
 
-    <ul>
-        <li>{{ plates }} </li}
+        <ul>
+            <li>{{ plates }} </li}
 
-    {% endfor %}
+        {% endfor %}
+    {% else %}
+        <h2> You current have no plates </h2>
+    {% endif %}
 
     </ul>
 
