@@ -4,11 +4,16 @@
 
 
     <h1> Login succesfull </h1>
-    {% for chef in chefs %}
     <ul>
-        <li>{{chef}} </li}
+    {% for chef in chefs %}
+        <li>{{chef.name}} has : 
+            <ul>
+                {% for p in chef.plates %}
+                    <li> {{p.name}} </li>
+                {% endfor %}
+            </ul> 
+        </li>
     {% endfor %}
-
     </ul>
 
 {% endblock %}
