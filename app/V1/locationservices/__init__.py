@@ -19,6 +19,8 @@ class ParseDirections(object):
         htmlList = ParseDirections.get_HTML_directions(directions)
         soup = BeautifulSoup("\n".join(htmlList),"lxml")
         return soup.text
+def eval_dist(dist):
+    return float(dist.split(" ")[0])
 
 class LocationService(object):
 
@@ -36,7 +38,7 @@ class LocationService(object):
         self.addrList.append(addr)
 
     def get_distances(self):
-        result = self.gmaps.distance_matrix(self.source,self.addrList)
+        result = self.gmaps.distance_matrix(self.source,self.addrList,units="imperial")
         for i, addr in enumerate(result[DEST_ADDRS]):
             distance = result['rows'][0]['elements'][i]['distance']['text']
             duration = result['rows'][0]['elements'][i]['duration']['text']
@@ -59,6 +61,16 @@ class LocationService(object):
             nearest_addr.append(addr[1])
         return nearest_addr
 
+    def get_addr_by_radius(self, radius=10):
+        results = []
+        addrs = self.get_distances()
+        for (source,dest), dist in addrs.items():
+            if eval_dist(dist) <=float(radius):
+                temp = {}
+                temp[(source,dest)] = dist 
+                results.append(temp) 
+        return results
+
     def get_directions(self, dest):
         now = datetime.now()
         if len(dest) == 1:
@@ -78,8 +90,12 @@ if __name__ == "__main__":
     addr6 = "1133 W Blaine St, Riverside, CA"
     ls = LocationService(source,[addr1,addr2,addr3, addr4, addr5,addr6])
     pp.pprint(ls.get_distances())
+    """
     print("Nearest locations: \n\n")
     pp.pprint(ls.get_n_nearest(3))
     print("Directions: \n")
     print(ls.get_directions(addr2))
+    """
+    print("\n\n")
+    pp.pprint(ls.get_addr_by_radius(radius=17))
 
