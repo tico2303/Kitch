@@ -19,8 +19,13 @@ class ParseDirections(object):
         htmlList = ParseDirections.get_HTML_directions(directions)
         soup = BeautifulSoup("\n".join(htmlList),"lxml")
         return soup.text
+
 def eval_dist(dist):
     return float(dist.split(" ")[0])
+
+def format_addr(addr):
+    addr = addr.split(",")[:-1]
+    return ",".join(addr)
 
 class LocationService(object):
 
@@ -31,6 +36,7 @@ class LocationService(object):
         self.addrList = list(*args)
         self.distances = {}
         self.durations = {}
+        #reverse distance hashmap
         self.rev_dist = {}
         self.get_distances()
 
@@ -40,11 +46,12 @@ class LocationService(object):
     def get_distances(self):
         result = self.gmaps.distance_matrix(self.source,self.addrList,units="imperial")
         for i, addr in enumerate(result[DEST_ADDRS]):
+            addr = format_addr(addr)
             distance = result['rows'][0]['elements'][i]['distance']['text']
             duration = result['rows'][0]['elements'][i]['duration']['text']
-            self.distances[(self.source,addr)] = distance
-            self.durations[(self.source,addr)] = duration
-            self.rev_dist[distance] = (self.source,addr)
+            self.distances[(self.source,self.addrList[i])] = distance
+            self.durations[(self.source,self.addrList[i])] = duration
+            self.rev_dist[distance] = (self.source,self.addrList[i])
         return self.distances
 
     def get_n_nearest(self,n):
@@ -67,7 +74,7 @@ class LocationService(object):
         for (source,dest), dist in addrs.items():
             if eval_dist(dist) <=float(radius):
                 temp = {}
-                temp[(source,dest)] = dist 
+                temp[(source,dest)] = eval_dist(dist)
                 results.append(temp) 
         return results
 
@@ -77,6 +84,16 @@ class LocationService(object):
             dest = dest[0]
         directions = ParseDirections.get_text_directions(self.gmaps.directions(self.source,dest,departure_time=now))
         return "From " + self.source +":\n" + directions
+
+    def get_places(self, search_term):
+        place_results = self.gmaps.places(query=search_term)
+        for res in place_results['results']:
+            pp.pprint("Name: "+ str(res['name']))
+            pp.pprint("Location: "+ str(res['geometry']['location']))
+            pp.pprint("Rating: "+ str(res['rating']))
+            print("\n\n\n")
+        pp.pprint(place_results['results'][0])
+
 
 if __name__ == "__main__":
     import pprint
@@ -98,4 +115,5 @@ if __name__ == "__main__":
     """
     print("\n\n")
     pp.pprint(ls.get_addr_by_radius(radius=17))
+    # ls.get_places("mexican in riverside, ca")
 
