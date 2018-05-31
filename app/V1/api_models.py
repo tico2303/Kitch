@@ -15,12 +15,16 @@ class ApiModel(object):
         return  self.api.model('List of Users', {
                                     "user": fields.Nested(self.user_list_format())
                                         })
+
+
     def item_list_format(self):
         return self.api.model('Item List format',{
-                                "id":fields.String(description="id of Item", required=True),
-                                "seller_id":fields.String(description="id Seller", required=True),
+                                "seller_id":fields.String(description="sellers id", required=True),
                                 "name":fields.String(description="Name of Item", required=False),
-                                "price":fields.String(description="Price of Item", required=False)
+                                "price":fields.Float(description="Price of Item", required=False),
+                                "qnty":fields.Float(description="quantity of item", required=False),
+                                "description":fields.String(description="Name of Item", required=False),
+                                "buyers":fields.List(fields.Integer,description="list of buyer id's",required=False)
                             })
 
     def location_radius_format(self):
