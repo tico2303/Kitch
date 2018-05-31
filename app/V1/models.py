@@ -39,22 +39,23 @@ class Location(db.Model):
 
 class Store(db.Model):
         id = db.Column(db.Integer, primary_key=True)
-        isdelivery = db.Column(db.Boolean)
-        ispickup = db.Column(db.Boolean)
+        isdelivery = db.Column(db.Boolean,nullable=True)
+        ispickup = db.Column(db.Boolean,nullable=True)
         # TODO
             # inventory many items to many stores
             # orders many orders to many stores
 
 class Item(db.Model):
         id = db.Column(db.Integer, primary_key=True)
+        seller_id = db.Column(db.Integer)
         name = db.Column(db.String)
         description = db.Column(db.String)
         price = db.Column(db.Float)
         qnty = db.Column(db.Integer)
-        isdone = db.Column(db.Boolean)
-        isinprogress = db.Column(db.Boolean)
-        isdelivery = db.Column(db.Boolean)
-        ispickup = db.Column(db.Boolean)
+        isdone = db.Column(db.Boolean,nullable=True)
+        isinprogress = db.Column(db.Boolean,nullable=True)
+        isdelivery = db.Column(db.Boolean,nullable=True)
+        ispickup = db.Column(db.Boolean,nullable=True)
 
         # TODO:
             # one items many buyers
