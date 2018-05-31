@@ -2,7 +2,11 @@ from __future__ import print_function
 import googlemaps
 from datetime import datetime
 from bs4 import BeautifulSoup
+import os
+import usaddress as uaddr
 
+# API_KEY = os.environ.get('GOOGLE_API_KEY')
+API_KEY = "AIzaSyCljSfU86qvpoo6XplCgvRvON47rA_91vw"
 DEST_ADDRS = "destination_addresses"
 ORIG_ADDRS = "origin_addresses"
 
@@ -20,6 +24,49 @@ class ParseDirections(object):
         soup = BeautifulSoup("\n".join(htmlList),"lxml")
         return soup.text
 
+# TODO use AddresMapper to decompose address into
+# city, state, zip... etc
+class AddressMapper(object):
+    def __init__(self):
+        """ Address Mapper and parser that returns orderedDict
+            with keys: [fulladdress, city, state, zip] to access data
+        """
+        self.fulladdrmapping = {
+           'Recipient': 'recipient',
+           'AddressNumber': 'fulladdress',
+           'AddressNumberPrefix': 'fulladdress',
+           'AddressNumberSuffix': 'fulladdress',
+           'StreetName': 'fulladdress',
+           'StreetNamePreDirectional': 'fulladdress',
+           'StreetNamePreModifier': 'fulladdress',
+           'StreetNamePreType': 'fulladdress',
+           'StreetNamePostDirectional': 'fulladdress',
+           'StreetNamePostModifier': 'fulladdress',
+           'StreetNamePostType': 'fulladdress',
+           'CornerOf': 'fulladdress',
+           'IntersectionSeparator': 'fulladdress',
+           'LandmarkName': 'fulladdress',
+           'USPSBoxGroupID': 'fulladdress',
+           'USPSBoxGroupType': 'fulladdress',
+           'USPSBoxID': 'fulladdress',
+           'USPSBoxType': 'fulladdress',
+           'BuildingName': 'address2',
+           'OccupancyType': 'address2',
+           'OccupancyIdentifier': 'address2',
+           'SubaddressIdentifier': 'address2',
+           'SubaddressType': 'address2',
+           'PlaceName': 'city',
+           'StateName': 'state',
+           'ZipCode': 'zipcode',
+        }
+        self.uaddr = uaddr
+
+    def parse(self, addr, mapping='fulladdress'):
+        if mapping == 'fulladdress':
+            return self.uaddr.tag(addr, tag_mapping=self.fulladdrmapping)[0]
+        elif mapping == 'default':
+            return self.uaddr.tag(addr)[0]
+
 def eval_dist(dist):
     return float(dist.split(" ")[0])
 
@@ -27,31 +74,37 @@ def format_addr(addr):
     addr = addr.split(",")[:-1]
     return ",".join(addr)
 
+def parse_addr(addr):
+    pass
+
 class LocationService(object):
 
     def __init__(self,source,*args):
-        apikey ="AIzaSyCljSfU86qvpoo6XplCgvRvON47rA_91vw"
-        self.gmaps = googlemaps.Client(key=apikey)
-        self.source =source
+        print("API_KEY:", API_KEY)
+        self.addrmapper = AddressMapper()
+        self.gmaps = googlemaps.Client(key=API_KEY)
+        self.source = self.addrmapper.parse(source)
+        print(self.source)
         self.addrList = list(*args)
         self.distances = {}
         self.durations = {}
         #reverse distance hashmap
         self.rev_dist = {}
+        self.geo_addrList = []
         self.get_distances()
 
     def add_address(self,addr):
         self.addrList.append(addr)
 
     def get_distances(self):
-        result = self.gmaps.distance_matrix(self.source,self.addrList,units="imperial")
+        result = self.gmaps.distance_matrix(self.source.get('fulladdress'),self.addrList,units="imperial")
         for i, addr in enumerate(result[DEST_ADDRS]):
             addr = format_addr(addr)
             distance = result['rows'][0]['elements'][i]['distance']['text']
             duration = result['rows'][0]['elements'][i]['duration']['text']
-            self.distances[(self.source,self.addrList[i])] = distance
-            self.durations[(self.source,self.addrList[i])] = duration
-            self.rev_dist[distance] = (self.source,self.addrList[i])
+            self.distances[(self.source.get('fulladdress'),self.addrList[i])] = distance
+            self.durations[(self.source.get('fulladdress'),self.addrList[i])] = duration
+            self.rev_dist[distance] = (self.source.get('fulladdress'),self.addrList[i])
         return self.distances
 
     def get_n_nearest(self,n):
@@ -71,10 +124,14 @@ class LocationService(object):
     def get_addr_by_radius(self, radius=10):
         results = []
         addrs = self.get_distances()
-        for (source,dest), dist in addrs.items():
+        li = [dest for _,dest in addrs.keys()]
+        # print("len(addrs):",len(addrs))
+        
+        for i,((source,dest), dist) in enumerate(addrs.items()):
             if eval_dist(dist) <=float(radius):
                 temp = {}
                 temp[(source,dest)] = eval_dist(dist)
+                temp["destination"] = self.addrmapper.parse(dest)
                 results.append(temp) 
         return results
 
@@ -82,7 +139,7 @@ class LocationService(object):
         now = datetime.now()
         if len(dest) == 1:
             dest = dest[0]
-        directions = ParseDirections.get_text_directions(self.gmaps.directions(self.source,dest,departure_time=now))
+        directions = ParseDirections.get_text_directions(self.gmaps.directions(self.source.get('fulladdress'),dest,departure_time=now))
         return "From " + self.source +":\n" + directions
 
     def get_places(self, search_term):
