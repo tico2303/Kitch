@@ -3,8 +3,8 @@ from flask import jsonify
 from flask_restplus import Resource, Api, reqparse
 # from flask_restplus import Resource, fields, reqparse
 
-from app.V1.dao import create_user,get_location 
-from app.V1.models import User,Location
+from app.V1.dao import create_user,get_location , get_items
+from app.V1.models import User,Location,Item
 from locationservices import LocationService
 from api_models import ApiModel
 
@@ -66,7 +66,7 @@ class LocationList(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('source', type=str)
         parser.add_argument('radius', type=int)
-        parser.add_argument('id', type=int)
+        # parser.add_argument('id', type=int)
         args = parser.parse_args()
         source_addr = args['source']
         radius = args['radius']
@@ -74,6 +74,16 @@ class LocationList(Resource):
         # print("radius: ", radius)
         return get_location(args)['locations']
 
+
+
+@api.route('/items')
+class ItemsList(Resource):
+    @api.response(200, 'Success', apimodel.item_list_format())
+    @api.doc(params={
+                     })
+    @api.marshal_with(apimodel.item_list_format(),envelope="results")
+    def get(self):
+        return get_items("test")
 
 
 
