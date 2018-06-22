@@ -1,6 +1,6 @@
 
 ## userObject:
-    ```python
+```python
             {
             "id":uniqueIdentifier,
             "fname":"juan",
@@ -9,9 +9,9 @@
            "cart":<cartObject>,
            "store":<storeObject>
            }
-    ```
+```
 ## locationObject
-    ```python
+```python
           {"userid":1234,
            "lng": 48.234,
             "lat": 2.3451,
@@ -22,9 +22,9 @@
             "zip": 92507,
            }
 
-    ```
+```
 ## storeObject
-    ```python
+```python
            {"userid":1234,
            "orders":[{ "id":1, 
                        "item":"Sushi",
@@ -48,9 +48,9 @@
                            ]                    
             }
 
-    ```
+```
 ## cartObject
-    ```python
+```python
            {"userid":1234,
            "items":[{"name":"Burrito",
                       "price":10.00,
@@ -62,7 +62,7 @@
 
     ```
 ## itemObject
-    ```python
+```python
         { "itemid":123,
           "name":"Burrito",
           "price":10.22,
@@ -70,4 +70,4 @@
           "description":"description of item",
           "ingredients":["rice","beans","tortilla"],
             }
-    ```
+```
