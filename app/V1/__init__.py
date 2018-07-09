@@ -17,12 +17,12 @@ apimodel = ApiModel(api)
 class UsersList(Resource):
 
         @api.response(200, 'Success', apimodel.user_list_model())
-        # api.doc defines parameters that can be entered in localhost interface
+        # api.doc defines parameters that can be entered in localhost-web interface (swagger)
         @api.doc(params={
                 'id':'User Id',
                 'email':'Email address',
                 'fname':'First Name',
-                'lname':"Last "})
+                'lname':"Last Name"})
         # ensures that the format of the get request follows the model
         @api.marshal_with(apimodel.user_list_format())
         def get(self):
@@ -52,7 +52,7 @@ class LocationList(Resource):
     @api.marshal_with(apimodel.locations_list(),envelope="results")
     def get(self):
         locations = Location.query.all()
-        print(locations)
+        # print(locations)
         return locations,200
 
 @api.route('/location/radius')

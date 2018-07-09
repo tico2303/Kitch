@@ -38,7 +38,7 @@ def create_location(data):
 
 def get_location(data):
     locs = db.session.query(Location).all()
-    locs_list = [loc.address+" "+loc.city+", "+loc.state+", " +str(loc.zipcode) for loc in locs]
+    locs_list = [loc.address + " " + loc.city + ", " + loc.state + ", " + str(loc.zipcode) for loc in locs]
     loc_service = LocationService(data.get('source'),locs_list)
 
     res = loc_service.get_addr_by_radius(data.get('radius'))
@@ -48,19 +48,22 @@ def get_location(data):
         temp = {}
         for i,(k,v) in enumerate(destinations.items()):
             if k == "destination":
+                print("well its the destination")
                 addr = {}
                 addr['address'] = v.get("fulladdress")
                 addr['city'] = v.get("city")
                 addr['state'] = v.get("state")
                 addr['zipcode'] = v.get("zipcode")
                 if not temp:
+                    print("no temp\n")
                     temp = {}
                 temp['source']=addr
                 temp['id'] = db.session.query(Location).filter_by(address=v.get("fulladdress")).first().id
 
             else:
-                print("tuple action: ", v)
+                print("tuple : ", v)
                 if not temp:
+                    print("no temp\n")
                     temp = {}
                 temp['distance'] = v
             if (i+1)%2 == 0:

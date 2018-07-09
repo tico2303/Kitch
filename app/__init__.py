@@ -1,6 +1,9 @@
 from flask import Flask 
 from flask_sqlalchemy import SQLAlchemy
 
+# from flask import Blueprint
+# from flask_restplus import Api
+
 app = Flask(__name__)
 app.config.from_object('settings')
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True

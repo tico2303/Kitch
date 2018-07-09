@@ -1,3 +1,4 @@
+# Kitch API
 from interactive python shell :
 ```python
 from app import db

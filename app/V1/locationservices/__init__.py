@@ -126,7 +126,6 @@ class LocationService(object):
         addrs = self.get_distances()
         li = [dest for _,dest in addrs.keys()]
         # print("len(addrs):",len(addrs))
-        
         for i,((source,dest), dist) in enumerate(addrs.items()):
             if eval_dist(dist) <=float(radius):
                 temp = {}
