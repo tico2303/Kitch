@@ -1,0 +1,49 @@
+[
+{
+"itemid":123,
+"name":"Burrito",
+"price":10.22,
+"seller":101,
+"description":"Bean and rice tortilla",
+"ingredients":[
+                "rice",
+                "beans",
+                "tortilla"
+                ]
+},
+{
+"itemid":124,
+"name":"Sushi",
+"price":13.99,
+"seller":100,
+"description":"Basic California roll",
+"ingredients":[
+                "rice",
+                "nori",
+                "crab meat"
+                ]
+},
+{
+"itemid":125,
+"name":"Soup",
+"price":5.99,
+"seller":101,
+"description":"Homemade Chicken soup",
+"ingredients":[
+                "chicken",
+                "broth"
+                ]
+},
+{
+"itemid":126,
+"name":"tacos",
+"price":3.89,
+"seller":100,
+"description":"Fish tacos",
+"ingredients":[
+                "fish",
+                "torillas",
+                "lettuce"
+                ]
+}
+]
