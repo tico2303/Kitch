@@ -3,7 +3,7 @@ from flask import jsonify
 from flask_restplus import Resource, Api, reqparse
 # from flask_restplus import Resource, fields, reqparse
 
-from app.V1.dao import create_user,get_location , get_items
+from app.V1.dao import *
 from app.V1.models import User,Location,Item
 from locationservices import LocationService
 from api_models import ApiModel
@@ -38,16 +38,19 @@ class UsersList(Resource):
             userlist = User.query.all()
             return userlist,200
 
-        @api.expect(apimodel.user_list_model())
+        @api.expect(apimodel.user_list_format())
         def post(self):
-            data = api.payload['user']
-            print("[+] ", data)
-            newuser = create_user(api.payload['user'])
-            return newuser
+            create_user(api.payload)
+            return {'Success':'User Created'},200
 
 
 @api.route('/locations')
 class LocationList(Resource):
+    @api.expect(apimodel.location_creation_format())
+    def post(self):
+        create_location(api.payload)
+        return {'Success':'Location Created'},200
+
     @api.response(200,"Success",apimodel.locations_list())
     @api.marshal_with(apimodel.locations_list(),envelope="results")
     def get(self):

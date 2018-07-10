@@ -27,6 +27,14 @@ class ApiModel(object):
                                 "buyers":fields.List(fields.Integer,description="list of buyer id's",required=False)
                             })
 
+    def location_creation_format(self):
+        return self.api.model("Location Creation", {
+                                "address":fields.String(description="Address of User", required=True),
+                                "city":fields.String(description="City of User", required=True),
+                                "state":fields.String(description="State of User", required=True),
+                                "zip":fields.String(description="Zip Code of User", required=True)
+                            })
+
     def location_radius_format(self):
         return self.api.model("Locations by Radius",{
                               "source":fields.String(description="Address of source (address,city,state)", required=True),

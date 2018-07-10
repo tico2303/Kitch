@@ -8,6 +8,7 @@ def create_user(data):
     fname = data.get('fname','')
     lname = data.get('lname','')
     email = data.get('email')
+    print("The User Data Recieved: \n fname:",fname,"\n lname:", lname,"\n email:", email)
     print(db.session.query(User).filter_by(email=email).scalar())
     if db.session.query(User).filter_by(email=email).scalar() is not None:
         print("\n\nValidationError: Email aready exists\n\n\n")
@@ -17,12 +18,10 @@ def create_user(data):
     user = User(fname=fname,lname=lname,email=email)
     db.session.add(user)
     db.session.commit()
-    res = User.query.filter(User.id == user.id)
-    print("\n\n\n res: ", res)
-    j = res.serialize()
-    print("jsoned: ",j)
-    print("\n\n\n\n\n\n\n")
-    return j
+    res = User.query.filter(User.email == user.email).first()
+    if not res:
+        raise ValueError("The Query Failed to Return A User.")
+    print("The User Data Queried: \n fname:",res.fname,"\n lname:", res.lname,"\n email:", res.email, "\n id: ", res.id)
 
 def create_item(data):
     pass 
@@ -33,8 +32,17 @@ def get_items(data):
 def get_user(data):
     pass
 
-def create_location(data):
-    pass
+def create_location(new_location):
+    address = new_location['address']
+    city = new_location['city']
+    state = new_location['state']
+    zipcode = new_location['zip']
+    location = Location(address=address,city=city,state=state,zipcode=zipcode)
+    db.session.add(location)
+    db.session.commit()
+    result = Location.query.filter(Location.id == location.id).first()
+    print("result: ", result.city)
+
 
 def get_location(data):
     locs = db.session.query(Location).all()
