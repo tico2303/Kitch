@@ -19,12 +19,12 @@ class ApiModel(object):
 
     def item_list_format(self):
         return self.api.model('Item List format',{
-                                "seller_id":fields.String(description="sellers id", required=True),
-                                "name":fields.String(description="Name of Item", required=False),
+                                "itemid":fields.Integer(description="id of the item"),
+                                "seller":fields.Integer(description="sellers id", required=True),
+                                "name":fields.String(description="Name of Item", required=True),
                                 "price":fields.Float(description="Price of Item", required=False),
-                                "qnty":fields.Float(description="quantity of item", required=False),
-                                "description":fields.String(description="Name of Item", required=False),
-                                "buyers":fields.List(fields.Integer,description="list of buyer id's",required=False)
+                                "description":fields.String(description="Description of the item", required=False),
+                                "ingredients":fields.List(fields.String(description="list of ingredients",required=False))
                             })
 
     def location_creation_format(self):
