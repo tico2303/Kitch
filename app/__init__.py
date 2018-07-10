@@ -1,8 +1,7 @@
-from flask import Flask 
+from __future__ import print_function
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-# from flask import Blueprint
-# from flask_restplus import Api
 
 app = Flask(__name__)
 app.config.from_object('settings')
