@@ -45,7 +45,6 @@ class File(Dao):
         pass
 
     def create_user(self,data):
-<<<<<<< Updated upstream
         try:
             with open(self.dir +"user.json",'a') as f:
                 json.dump(data,f)
@@ -115,11 +114,6 @@ class File(Dao):
             pass
         return {'Failure':'Unable To Retrieve User Item List In Dao - File'},400
 
-
-        
-=======
-        pass
->>>>>>> Stashed changes
 
     def get_item(self,data):
         itemslist = []
