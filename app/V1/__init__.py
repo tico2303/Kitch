@@ -40,8 +40,51 @@ class UsersList(Resource):
 
         @api.expect(apimodel.user_list_format())
         def post(self):
-            Dao.create_user(api.payload)
-            return {'Success':'User Created'},200
+            return Dao.create_user(api.payload)
+
+
+#Give A User Id, Return All Items the Chef Has In the Database
+@api.route('/user/items')
+class UserItems(Resource):
+        @api.response(200, 'Success', apimodel.user_items_model())
+        @api.response(400, 'Failure')
+        # api.doc defines parameters that can be entered in localhost-web interface (swagger)
+        @api.doc(params={
+                'id':'User Id'
+                })
+        # ensures that the format of the get request follows the model
+        def get(self):
+            parser = reqparse.RequestParser()
+            parser.add_argument('id', type=str)
+            args = parser.parse_args()
+            if args['id'] is None:
+                return {'ValueError':'Invalid User ID'},400
+            return Dao.get_items(args)
+
+
+#Add an Item to A Buyers Cart or Get a User Cart
+@api.route('/cart')
+class Cart(Resource):
+        @api.response(200, 'Success', apimodel.cart_response_model())
+        @api.response(400, 'Failure')
+        #@api.marshal_with(apimodel.cart_get_model())
+        @api.doc(params={
+                'user_id':'User Id'
+                })
+        def get(self):
+            parser = reqparse.RequestParser()
+            parser.add_argument('user_id', type=str)
+            args = parser.parse_args()
+            if args['user_id'] is None:
+                return {'ValueError':'Invalid User ID'},400
+            return Dao.get_cart(args)
+
+        @api.response(200, 'Success')
+        @api.response(400, 'Failure')
+        @api.expect(apimodel.cart_post_model())
+        def post(self):
+            return Dao.add_item_to_cart(api.payload)
+
 
 @api.route('/locations')
 class LocationList(Resource):

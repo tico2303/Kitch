@@ -6,29 +6,26 @@ from sqlalchemy.sql import exists
 from locationservices import LocationService
 
 class Dao(object):
-
-    @staticmethod
+    
     def create_user(data):
         raise NotImplementedError
 
-    @staticmethod
     def create_item(self, data):
         raise NotImplementedError
 
-    @staticmethod
     def get_items(data):
         raise NotImplementedError
 
-    @staticmethod
     def create_location(data):
         raise NotImplementedError
 
-    @staticmethod
     def get_locations_by_radius(data):
         raise NotImplementedError
-
-    @staticmethod
+    
     def get_users():
+        raise NotImplementedError
+
+    def add_item_to_cart(data):
         raise NotImplementedError
 
 
@@ -48,14 +45,83 @@ class File(Dao):
             data = json.load(f)
         print("Data: ", data)
 
-    @staticmethod
-    def create_user(data):
-        pass
+    def create_user(self,data):
+        try:
+            with open(self.dir +"user.json",'a') as f:
+                json.dump(data,f)
+            return {'Success':'User Created'},200
+        except:
+            return {'Failure':'Create User Unsuccessful In Dao - File'},400
+
+    def add_item_to_cart(self,data):
+        try:
+            item_list = []
+            with open(self.dir +"cart.json",'r') as f:
+                try:
+                    item_list = json.load(f)
+                except ValueError as e:
+                    print("Warning - Cart Was Maybe Empty printing error: ", e)
+                    print("Proceeding With An Empty Cart List")
+                    item_list = []
+                print("Item List: \n", item_list)
+            item_list.append(data)
+            with open(self.dir +"cart.json",'w') as f:
+                json.dump(item_list,f)
+            return {'Success':'Added Item To Cart'},200
+        except:
+            return {'Failure':'Unable to add to Item to Cart In Dao - File'},400
+
+    def get_cart(self,data):
+        try:
+            cart = {}
+            cart['user_id'] = data['user_id']
+            cart['items'] = []
+            cart['total'] = 0
+            items = []
+            print("Data: \n", data)
+            with open(self.dir +"item.json",'r') as f2:
+                items = json.load(f2)
+            with open(self.dir +"cart.json",'r') as f:
+                carts = json.load(f)
+                for cart_item in carts:
+                    if cart_item['buyer_id'] == data['user_id']:
+                        cart['items'].append(cart_item)
+                        for item in items:
+                            if item['itemid'] == cart_item['item']['item_id']:
+                                cart['total'] += float(cart_item['item']['qnty']) * item['price']
+            return cart,200
+        except:
+            return {'Failure':'Unable to add to Item to Cart In Dao - File'},400
+
+    def get_items(self,data):
+        try:
+            seller_items = {}
+            seller_items["items"] = []
+            with open(self.dir +"item.json",'r') as f:
+                all_items = json.load(f)
+                print("All Items:", all_items)
+                for item in all_items:
+                    print("Current Item: ", item)
+                    if int(item['seller']) == int(data['id']):
+                        seller_items["items"].append(item)
+                        print("Item Added To List")
+            print("Seller Items:", seller_items)
+            return seller_items,200
+        except ValueError as e:
+            print(e)
+        except TypeError as e:
+            print(e)
+        except: 
+            pass
+        return {'Failure':'Unable To Retrieve User Item List In Dao - File'},400
+
+
+        
 
 # Database class that reads and writes to kitch.db in database dir
 class Database(Dao):
 
-    @staticmethod
+    
     def create_user(data):
         fname = data.get('fname','')
         lname = data.get('lname','')
@@ -68,23 +134,25 @@ class Database(Dao):
         res = User.query.filter(User.id == user.id).first()
         return res
 
-    @staticmethod
+    
     def create_item(data):
         pass
 
-    @staticmethod
+    
     def get_items(data):
         return Item.query.all()
 
-    @staticmethod
+    
     def get_user(data):
         pass
 
-    @staticmethod
+    
     def get_users():
         return User.query.all()
 
-    @staticmethod
+    def add_item_to_cart(data):
+        pass
+    
     def create_location(new_location):
         address = new_location['address']
         city = new_location['city']
@@ -96,11 +164,11 @@ class Database(Dao):
         result = Location.query.filter(Location.id == location.id).first()
         print("result: ", result.city)
 
-    @staticmethod
+    
     def get_locations():
         return Location.query.all()
 
-    @staticmethod
+    
     def get_location_by_radius(data):
         locs = db.session.query(Location).all()
         locs_list = [loc.address + " " + loc.city + ", " + loc.state + ", " + str(loc.zipcode) for loc in locs]

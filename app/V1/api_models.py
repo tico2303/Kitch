@@ -11,6 +11,7 @@ class ApiModel(object):
                                 "fname":fields.String(description="first name ", required=False),
                                 "lname":fields.String(description="last name", required=False)
                                 })
+
     def user_list_model(self):
         return  self.api.model('List of Users', {
                                     "user": fields.Nested(self.user_list_format())
@@ -26,6 +27,35 @@ class ApiModel(object):
                                 "description":fields.String(description="Description of the item", required=False),
                                 "ingredients":fields.List(fields.String(description="list of ingredients",required=False))
                             })
+
+    def user_items_model(self):
+        return  self.api.model('List of Items For A Given User', {
+                                    "items": fields.Nested(self.item_list_format())
+                                        })
+
+    def cart_item_list_model(self):
+        return self.api.model('List of Cart Items With Quantity', {
+                "item_id":fields.Integer(description="Item Id", required=True),
+                "qnty":fields.Integer(description="Quantity of item in Cart",required=True),
+            })
+
+    def cart_get_model(self):
+        return self.api.model('Cart format',{
+                                "user_id":fields.String(description="id of the user", required=True)
+                                })
+        
+    def cart_post_model(self):
+        return self.api.model('Cart format',{
+                                "buyer_id":fields.String(description="id of User that is buying the item", required=True),
+                                "item": fields.Nested(self.cart_item_list_model(),required=True),
+                                })
+
+    def cart_response_model(self):
+        return self.api.model('Cart format',{
+                                "user_id":fields.String(description="id of the user", required=True),
+                                "items":fields.List(fields.Nested(self.cart_item_list_model())),
+                                "total":fields.Float(description="Total Price of Items In Cart")
+                                })
 
     def location_creation_format(self):
         return self.api.model("Location Creation", {
