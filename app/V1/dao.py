@@ -6,28 +6,27 @@ from sqlalchemy.sql import exists
 from locationservices import LocationService
 
 class Dao(object):
-    
-    def create_user(data):
+
+    def create_user(self,data):
         raise NotImplementedError
 
     def create_item(self, data):
         raise NotImplementedError
 
-    def get_items(data):
-        raise NotImplementedError
-
-    def create_location(data):
-        raise NotImplementedError
-
-    def get_locations_by_radius(data):
-        raise NotImplementedError
-    
-    def get_users():
-        raise NotImplementedError
-
     def add_item_to_cart(data):
         raise NotImplementedError
 
+    def get_item(self,data):
+        raise NotImplementedError
+
+    def create_location(self,data):
+        raise NotImplementedError
+
+    def get_locations_by_radius(self,data):
+        raise NotImplementedError
+
+    def get_users(self):
+        raise NotImplementedError
 
 # Mock data Class reads and writes data from json files in database dir
 class File(Dao):
@@ -38,14 +37,15 @@ class File(Dao):
         print("Data file directory: ", self.dir)
 
     def test_file_read(self):
-        print("\n\n\n[~] Testing File Read\n\n\n")
-
-        data = None
-        with open(self.dir +"item.json",'r') as f:
-            data = json.load(f)
-        print("Data: ", data)
+        # print("\n\n\n[~] Testing File Read\n\n\n")
+        # data = None
+        # with open(self.dir +"item.json",'r') as f:
+            # data = json.load(f)
+        #print("Data: ", data)
+        pass
 
     def create_user(self,data):
+<<<<<<< Updated upstream
         try:
             with open(self.dir +"user.json",'a') as f:
                 json.dump(data,f)
@@ -117,12 +117,48 @@ class File(Dao):
 
 
         
+=======
+        pass
+>>>>>>> Stashed changes
+
+    def get_item(self,data):
+        itemslist = []
+        try:
+            with open(self.dir +"item.json",'r') as f:
+                itemslist = json.load(f)
+            itemid = data.get("itemid")
+            for item in itemslist:
+                if int(item.get("itemid")) == int(itemid):
+                    return item, 200
+            return {"Failure":"item with id {} not found".format(itemid)},400
+        except:
+            return {"Failure":"Unable to Get items"}, 400
+
+    def create_item(self, data):
+        try:
+            itemsList = []
+            with open(self.dir + "item.json",'r') as f:
+                try:
+                    itemsList = json.load(f)
+                except ValueError:
+                    print("[!] Warning item.json is empty")
+                    itemsList = []
+                for item in itemsList:
+                    if data.get("itemid")  == item.get("itemid"):
+                        # print("[!] Error: itemid NOT UNIQUE")
+                        return {"Failure":"Itemid not unique"}, 400
+
+            itemsList.append(data)
+            with open(self.dir + "item.json",'w') as f:
+                json.dump(itemsList,f)
+            return data, 200
+        except:
+            return {"Failure":"Read/write failure"}, 400
 
 # Database class that reads and writes to kitch.db in database dir
 class Database(Dao):
 
-    
-    def create_user(data):
+    def create_user(self,data):
         fname = data.get('fname','')
         lname = data.get('lname','')
         email = data.get('email','')
@@ -134,26 +170,26 @@ class Database(Dao):
         res = User.query.filter(User.id == user.id).first()
         return res
 
-    
-    def create_item(data):
-        pass
-
-    
-    def get_items(data):
-        return Item.query.all()
-
-    
-    def get_user(data):
-        pass
-
-    
-    def get_users():
-        return User.query.all()
-
     def add_item_to_cart(data):
         pass
-    
-    def create_location(new_location):
+
+    def create_item(self,data):
+        pass
+
+
+    def get_items(self,data):
+        return Item.query.all()
+
+
+    def get_user(self,data):
+        pass
+
+
+    def get_users(self):
+        return User.query.all()
+
+
+    def create_location(self,new_location):
         address = new_location['address']
         city = new_location['city']
         state = new_location['state']
@@ -164,12 +200,11 @@ class Database(Dao):
         result = Location.query.filter(Location.id == location.id).first()
         print("result: ", result.city)
 
-    
-    def get_locations():
+    def get_locations(self,):
         return Location.query.all()
 
-    
-    def get_location_by_radius(data):
+
+    def get_location_by_radius(self,data):
         locs = db.session.query(Location).all()
         locs_list = [loc.address + " " + loc.city + ", " + loc.state + ", " + str(loc.zipcode) for loc in locs]
         loc_service = LocationService(data.get('source'),locs_list)

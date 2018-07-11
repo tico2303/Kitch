@@ -90,7 +90,7 @@ class Cart(Resource):
 class LocationList(Resource):
     @api.expect(apimodel.location_creation_format())
     def post(self):
-        create_location(api.payload)
+        Dao.create_location(api.payload)
         return {'Success':'Location Created'},200
 
     @api.response(200,"Success",apimodel.locations_list())
@@ -113,18 +113,41 @@ class LocationList(Resource):
         args = parser.parse_args()
         source_addr = args['source']
         radius = args['radius']
-        return get_locations_by_radius(args)['locations']
+        return Dao.get_locations_by_radius(args)['locations']
 
 
-
-@api.route('/items')
+@api.route('/item')
 class ItemsList(Resource):
     @api.response(200, 'Success', apimodel.item_list_format())
+    @api.response(400, 'Failure')
     @api.doc(params={
+                    "item_id":"the id of the item you need"
                      })
-    @api.marshal_with(apimodel.item_list_format(),envelope="results")
+    @api.marshal_with(apimodel.item_list_format())
     def get(self):
-        return get_items("test")
+        parser = reqparse.RequestParser()
+        parser.add_argument('itemid', type=str)
+        args = parser.parse_args()
+        return Dao.get_item(args)
 
+    @api.expect(apimodel.item_list_format())
+    @api.response(400, 'Failure', apimodel.item_failure_response())
+    def post(self):
+        return Dao.create_item(api.payload)
+
+@api.route("/checkout")
+class Checkout(Resource):
+    @api.response(200, 'Success', apimodel.checkout_response())
+    @api.response(400, 'Failure')
+    @api.doc(params={
+                    "user_id":"the id of the user checking out"
+                     })
+    @api.marshal_with(apimodel.item_list_format())
+    def get(self):
+        pass
+
+
+    # def post(self):
+    #     pass
 
 

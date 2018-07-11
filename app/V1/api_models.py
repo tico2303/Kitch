@@ -27,6 +27,10 @@ class ApiModel(object):
                                 "description":fields.String(description="Description of the item", required=False),
                                 "ingredients":fields.List(fields.String(description="list of ingredients",required=False))
                             })
+    def item_failure_response(self):
+        return self.api.model('Item Failure response',{
+                                "Failure":fields.String(description="Reason for failure", required=False),
+                            })
 
     def user_items_model(self):
         return  self.api.model('List of Items For A Given User', {
@@ -92,5 +96,8 @@ class ApiModel(object):
                               "state":fields.String(description="state", required=True),
                               "zipcode":fields.String(description="zipcode", required=False)
                                 })
+    def checkout_response(self):
+        return self.api.model("checkout response format",{
 
+                                })
 
