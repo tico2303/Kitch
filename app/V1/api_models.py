@@ -122,3 +122,20 @@ class ApiModel(object):
                                 "items":fields.List(fields.Nested(self.item_list_format())),
                                 })
 
+    def search_chef_response_model(self):
+        return self.api.model("Search Chef Model",{
+                                "users":fields.List(fields.Nested(self.user_list_format())),
+                                })
+
+    def search_food_type_response_model(self):
+        return self.api.model("Search Food Type Model",{
+                                "items":fields.List(fields.Nested(self.item_list_format())),
+                                })
+
+    def search_location_response_model(self):
+        return self.api.model("Search Food Type Model",{
+                                "locations":fields.List(fields.Nested(self.locations_list())),
+                                })
+
+
+

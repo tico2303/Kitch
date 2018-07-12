@@ -153,29 +153,29 @@ class Checkout(Resource):
 
 @api.route('/search/chef')
 class Search(Resource):
-    #@api.response(200, 'Success', apimodel.search_item_response_model())
+    @api.response(200, 'Success', apimodel.search_chef_response_model())
     @api.response(400, 'Failure')
     @api.doc(params={
-                        "chef":"Enter the chef to search for"
+                        "user":"Enter the chef to search for"
                      })
-    #@api.marshal_with(apimodel.search_chef_format())
+   #@api.marshal_with(apimodel.search_chef_format())
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('item', type=str)
+        parser.add_argument('user', type=str)
         args = parser.parse_args()
         return Searcher.search_by_chef(args)
 
 @api.route('/search/food_type')
 class Search(Resource):
-    #@api.response(200, 'Success', apimodel.search_item_response_model())
+    @api.response(200, 'Success', apimodel.search_food_type_response_model())
     @api.response(400, 'Failure')
     @api.doc(params={
-                        "item":"Enter the food type to search for"
+                        "Food Type":"Enter the food type to search for"
                      })
     #@api.marshal_with(apimodel.search_food_type_format())
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('item', type=str)
+        parser.add_argument('Food Type', type=str)
         args = parser.parse_args()
         return Searcher.search_by_food_type(args)
 
@@ -191,6 +191,20 @@ class Search(Resource):
         parser.add_argument('item', type=str)
         args = parser.parse_args()
         return Searcher.search_by_item(args)
+
+@api.route('/search/location')
+class Search(Resource):
+    @api.response(200, 'Success', apimodel.search_location_response_model())
+    @api.response(400, 'Failure')
+    @api.doc(params={
+                        "location":"Enter the location to search for"
+                     })
+    #@api.marshal_with(apimodel.search_food_type_format())
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('location', type=str)
+        args = parser.parse_args()
+        return Searcher.search_by_location(args)
 
 
 #This Route will Create 1 order object provided neccessary information.
