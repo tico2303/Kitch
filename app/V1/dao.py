@@ -92,7 +92,17 @@ class File(Dao):
         except:
             return {'Failure':'Unable to add to Item to Cart In Dao - File'},400
 
-    def get_items(self,data):
+    def get_items(self):
+        try:
+            all_items = []
+            with open(self.dir +"item.json",'r') as f:
+                all_items = json.load(f)
+            return all_items
+        except:
+            return {'Failure':'Unable To Retrieve All Items List In Dao - File'},400
+            
+
+    def get_items_from_seller(self,data):
         try:
             seller_items = {}
             seller_items["items"] = []
@@ -148,6 +158,28 @@ class File(Dao):
             return data, 200
         except:
             return {"Failure":"Read/write failure"}, 400
+
+    def create_order(self,data):
+        try:
+            orders = []
+            with open(self.dir + "order.json",'r') as f:
+                try:
+                    orders = json.load(f)
+                except ValueError:
+                    print("[!] Warning orders.json is empty")
+                    orders = []
+            orders.append(data)
+            with open(self.dir + "order.json",'w') as f:
+                json.dump(orders,f)
+            return {'Success':'Order Created'},200
+        except:
+            return {'Failure':'Order Creation Unsuccessful In Dao - File'},400
+
+    def process_payment(self):
+        # This should just query the database and return the proper information to the payment class
+        print("Processed Payment")
+        return {'Sucess':'Payment Processed'},200
+
 
 # Database class that reads and writes to kitch.db in database dir
 class Database(Dao):

@@ -27,6 +27,7 @@ class ApiModel(object):
                                 "description":fields.String(description="Description of the item", required=False),
                                 "ingredients":fields.List(fields.String(description="list of ingredients",required=False))
                             })
+
     def item_failure_response(self):
         return self.api.model('Item Failure response',{
                                 "Failure":fields.String(description="Reason for failure", required=False),
@@ -38,9 +39,10 @@ class ApiModel(object):
                                         })
 
     def cart_item_list_model(self):
-        return self.api.model('List of Cart Items With Quantity', {
+        return self.api.model('A Cart Item With Quantity And Price', {
                 "item_id":fields.Integer(description="Item Id", required=True),
                 "qnty":fields.Integer(description="Quantity of item in Cart",required=True),
+                "total":fields.Float(description="Total Price for Items", required=True)
             })
 
     def cart_get_model(self):
@@ -96,8 +98,27 @@ class ApiModel(object):
                               "state":fields.String(description="state", required=True),
                               "zipcode":fields.String(description="zipcode", required=False)
                                 })
-    def checkout_response(self):
-        return self.api.model("checkout response format",{
 
+    #TODO: Add a TimeStamp field to this order object. 
+    def orders_model(self):
+        return self.api.model("Order Model",{
+                              "id":fields.Integer(description="id of the location", required=False),
+                              "item":fields.Nested(self.cart_item_list_model(),required=True),
+                              "buyer_id":fields.Integer(description="ID of the user that is buying the order object", required=True),
+                              "seller_id":fields.Integer(description="ID of the user that is selling the order object", required=True),
+                              "is_done":fields.Bool(description="Order Completion identifier", required=True),
+                              "is_in_progress":fields.Bool(description="Order In Progress identifier", required=True),
+                              "is_delivery":fields.Bool(description="Specifies if this Order Is being Delivered", required=True),
+                              "is_pickup":fields.Bool(description="Specifies if this Order is being picked up", required=True)
+                                })
+
+    def payment_transaction_model(self):
+        return self.api.model("Payment Transaction Model",{
+                              "id":fields.Integer(description="id of the location", required=False)
+                                })
+
+    def search_item_response_model(self):
+        return self.api.model("Search Item Model",{
+                                "items":fields.List(fields.Nested(self.item_list_format())),
                                 })
 

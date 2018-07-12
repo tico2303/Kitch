@@ -1,0 +1,1 @@
+[{"seller_id": 100, "is_done": "False", "is_pickup": "True", "qnty": 1, "item_id": 123, "is_in_progress": "False", "is_delivery": "False", "buyer_id": 101}, {"seller_id": 100, "is_done": "False", "is_pickup": "True", "qnty": 2, "item_id": 125, "is_in_progress": "False", "is_delivery": "False", "buyer_id": 101}]

@@ -4,6 +4,8 @@ from flask import jsonify
 from flask_restplus import Resource, Api, reqparse
 # from app.V1.dao import Database
 from app.V1.dao import File
+from paymentservices import *
+from searchservices import *
 from locationservices import LocationService
 from api_models import ApiModel
 
@@ -13,6 +15,12 @@ api = Api(v1, version='1.0', title="Kitch API", description="Documentation for K
 apimodel = ApiModel(api)
 Dao = File()
 Dao.test_file_read()
+
+#Eventually, this will allow us to use other packages with such as Stripe.
+Payment = DaoPayment(Dao)
+
+#Eventually, this will allow us to use other packages with such as Elastic Search.
+Searcher = FileSearcher(Dao)
 
 @api.route('/users')
 class UsersList(Resource):
@@ -59,7 +67,7 @@ class UserItems(Resource):
             args = parser.parse_args()
             if args['id'] is None:
                 return {'ValueError':'Invalid User ID'},400
-            return Dao.get_items(args)
+            return Dao.get_items_from_seller(args)
 
 
 #Add an Item to A Buyers Cart or Get a User Cart
@@ -135,19 +143,98 @@ class ItemsList(Resource):
     def post(self):
         return Dao.create_item(api.payload)
 
-@api.route("/checkout")
+@api.route('/checkout')
 class Checkout(Resource):
-    @api.response(200, 'Success', apimodel.checkout_response())
+    @api.response(200, 'Success')
+    @api.response(400, 'Failure')
+    @api.expect(apimodel.payment_transaction_model())
+    def post(self):
+        return Payment.process_payment()
+
+@api.route('/search/chef')
+class Search(Resource):
+    #@api.response(200, 'Success', apimodel.search_item_response_model())
     @api.response(400, 'Failure')
     @api.doc(params={
-                    "user_id":"the id of the user checking out"
+                        "chef":"Enter the chef to search for"
                      })
-    @api.marshal_with(apimodel.item_list_format())
+    #@api.marshal_with(apimodel.search_chef_format())
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('item', type=str)
+        args = parser.parse_args()
+        return Searcher.search_by_chef(args)
+
+@api.route('/search/food_type')
+class Search(Resource):
+    #@api.response(200, 'Success', apimodel.search_item_response_model())
+    @api.response(400, 'Failure')
+    @api.doc(params={
+                        "item":"Enter the food type to search for"
+                     })
+    #@api.marshal_with(apimodel.search_food_type_format())
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('item', type=str)
+        args = parser.parse_args()
+        return Searcher.search_by_food_type(args)
+
+@api.route('/search/item')
+class Search(Resource):
+    @api.response(200, 'Success', apimodel.search_item_response_model())
+    @api.response(400, 'Failure')
+    @api.doc(params={
+                        "item":"Enter the item to search for"
+                     })
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('item', type=str)
+        args = parser.parse_args()
+        return Searcher.search_by_item(args)
+
+
+#This Route will Create 1 order object provided neccessary information.
+#Multiple Order Object May be in a Single Buyer's Order, Just call this function in a loop of the buyers cart
+#TODO: Do we want a route to place create an order object for all items in a users cart.
+@api.route('/order')
+class Orders(Resource):
+    @api.response(200, 'Success')
+    @api.response(400, 'Failure')
+    @api.doc(params={
+                    "order_id":"The id of the order object.",
+                    "buyer_id":"The id of the user placing the order object.",
+                    "seller_id":"The id of the user selling the item",
+                    "item_id":"The id of the item the user is making an order object for.",
+                    "qnty":"The quantity of the item the user wants for the order object",
+                    "is_done":"Order Completion identifier",
+                    "is_in_progress":"Order In Progress identifier",
+                    "is_delivery":"Specifies if this Order Is being Delivered",
+                    "is_pickup":"Specifies if this Order is being picked up" 
+                     })
+    def post(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('buyer_id', type=int)
+        parser.add_argument('seller_id', type=int)
+        parser.add_argument('item_id', type=int)
+        parser.add_argument('qnty', type=int)
+        parser.add_argument('is_done', type=str)
+        parser.add_argument('is_in_progress', type=str)
+        parser.add_argument('is_delivery', type=str)
+        parser.add_argument('is_pickup', type=str)
+        args = parser.parse_args()
+        if args['buyer_id'] is None:
+            return {'Failure':'Invalid User ID'},400
+        if args['seller_id'] is None:
+            return {'Failure':'Invalid User ID'},400
+        if args['item_id'] is None:
+            return {'Failure':'Invalid Item ID'},400
+        if args['qnty'] is None:
+            return {'Failure':'Quantity Not Specified'},400
+        return Dao.create_order(args)
+
     def get(self):
         pass
 
 
-    # def post(self):
-    #     pass
 
 
