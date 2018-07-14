@@ -41,7 +41,7 @@ class UsersList(Resource):
             args = parser.parse_args()
 
             if args['id'] is None:
-                return {'ValueError':'Invalid userId'},400
+                return {'ValueError':'Invalid userId'},500
 
             userlist = Dao.get_users()
             return userlist,200
@@ -55,7 +55,7 @@ class UsersList(Resource):
 @api.route('/user/items')
 class UserItems(Resource):
         @api.response(200, 'Success', apimodel.user_items_model())
-        @api.response(400, 'Failure')
+        @api.response(500, 'Failure')
         # api.doc defines parameters that can be entered in localhost-web interface (swagger)
         @api.doc(params={
                 'id':'User Id'
@@ -66,7 +66,7 @@ class UserItems(Resource):
             parser.add_argument('id', type=str)
             args = parser.parse_args()
             if args['id'] is None:
-                return {'ValueError':'Invalid User ID'},400
+                return {'ValueError':'Invalid User ID'},500
             return Dao.get_items_from_seller(args)
 
 
@@ -74,7 +74,7 @@ class UserItems(Resource):
 @api.route('/cart')
 class Cart(Resource):
         @api.response(200, 'Success', apimodel.cart_response_model())
-        @api.response(400, 'Failure')
+        @api.response(500, 'Failure')
         #@api.marshal_with(apimodel.cart_get_model())
         @api.doc(params={
                 'user_id':'User Id'
@@ -84,11 +84,11 @@ class Cart(Resource):
             parser.add_argument('user_id', type=str)
             args = parser.parse_args()
             if args['user_id'] is None:
-                return {'ValueError':'Invalid User ID'},400
+                return {'ValueError':'Invalid User ID'},500
             return Dao.get_cart(args)
 
         @api.response(200, 'Success')
-        @api.response(400, 'Failure')
+        @api.response(500, 'Failure')
         @api.expect(apimodel.cart_post_model())
         def post(self):
             return Dao.add_item_to_cart(api.payload)
@@ -127,7 +127,7 @@ class LocationList(Resource):
 @api.route('/item')
 class ItemsList(Resource):
     @api.response(200, 'Success', apimodel.item_list_format())
-    @api.response(400, 'Failure')
+    @api.response(500, 'Failure')
     @api.doc(params={
                     "item_id":"the id of the item you need"
                      })
@@ -139,14 +139,14 @@ class ItemsList(Resource):
         return Dao.get_item(args)
 
     @api.expect(apimodel.item_list_format())
-    @api.response(400, 'Failure', apimodel.item_failure_response())
+    @api.response(500, 'Failure', apimodel.item_failure_response())
     def post(self):
         return Dao.create_item(api.payload)
 
 @api.route('/checkout')
 class Checkout(Resource):
     @api.response(200, 'Success')
-    @api.response(400, 'Failure')
+    @api.response(500, 'Failure')
     @api.expect(apimodel.payment_transaction_model())
     def post(self):
         return Payment.process_payment()
@@ -154,7 +154,7 @@ class Checkout(Resource):
 @api.route('/search/chef')
 class Search(Resource):
     @api.response(200, 'Success', apimodel.search_chef_response_model())
-    @api.response(400, 'Failure')
+    @api.response(500, 'Failure')
     @api.doc(params={
                         "user":"Enter the chef to search for"
                      })
@@ -168,7 +168,7 @@ class Search(Resource):
 @api.route('/search/food_type')
 class Search(Resource):
     @api.response(200, 'Success', apimodel.search_food_type_response_model())
-    @api.response(400, 'Failure')
+    @api.response(500, 'Failure')
     @api.doc(params={
                         "Food Type":"Enter the food type to search for"
                      })
@@ -182,7 +182,7 @@ class Search(Resource):
 @api.route('/search/item')
 class Search(Resource):
     @api.response(200, 'Success', apimodel.search_item_response_model())
-    @api.response(400, 'Failure')
+    @api.response(500, 'Failure')
     @api.doc(params={
                         "item":"Enter the item to search for"
                      })
@@ -195,7 +195,7 @@ class Search(Resource):
 @api.route('/search/location')
 class Search(Resource):
     @api.response(200, 'Success', apimodel.search_location_response_model())
-    @api.response(400, 'Failure')
+    @api.response(500, 'Failure')
     @api.doc(params={
                         "location":"Enter the location to search for"
                      })
@@ -213,7 +213,7 @@ class Search(Resource):
 @api.route('/order')
 class Orders(Resource):
     @api.response(200, 'Success')
-    @api.response(400, 'Failure')
+    @api.response(500, 'Failure')
     @api.doc(params={
                     "order_id":"The id of the order object.",
                     "buyer_id":"The id of the user placing the order object.",
@@ -237,13 +237,13 @@ class Orders(Resource):
         parser.add_argument('is_pickup', type=str)
         args = parser.parse_args()
         if args['buyer_id'] is None:
-            return {'Failure':'Invalid User ID'},400
+            return {'Failure':'Invalid User ID'},500
         if args['seller_id'] is None:
-            return {'Failure':'Invalid User ID'},400
+            return {'Failure':'Invalid User ID'},500
         if args['item_id'] is None:
-            return {'Failure':'Invalid Item ID'},400
+            return {'Failure':'Invalid Item ID'},500
         if args['qnty'] is None:
-            return {'Failure':'Quantity Not Specified'},400
+            return {'Failure':'Quantity Not Specified'},500
         return Dao.create_order(args)
 
     def get(self):

@@ -44,13 +44,45 @@ class File(Dao):
         #print("Data: ", data)
         pass
 
+    def create_item(self, data):
+        try:
+            items = []
+            with open(self.dir + "item.json",'r') as f:
+                try:
+                    items = json.load(f)
+                except ValueError:
+                    print("[!] Warning item.json is empty")
+                    items = []
+                for item in items:
+                    if data.get("itemid")  == item.get("itemid"):
+                        # print("[!] Error: itemid NOT UNIQUE")
+                        return {"Failure":"Itemid not unique"}, 500
+            items.append(data)
+            with open(self.dir + "item.json",'w') as f:
+                json.dump(items,f)
+            return {'Success':'Item Created'},200
+        except:
+            return {'Failure':'Item Creation Unsuccessful In Dao - File'},500
+
     def create_user(self,data):
         try:
-            with open(self.dir +"user.json",'a') as f:
-                json.dump(data,f)
+            users = []
+            with open(self.dir +"user.json",'r') as f:
+                try:
+                    users = json.load(f)
+                except ValueError:
+                    print("[!] Warning item.json is empty")
+                    users = []
+                for user in users:
+                    if data.get("id")  == user.get("id"):
+                        # print("[!] Error: itemid NOT UNIQUE")
+                        return {"Failure":"User id not unique"}, 500
+            users.append(data)
+            with open(self.dir + "user.json",'w') as f:
+                json.dump(users,f)
             return {'Success':'User Created'},200
         except:
-            return {'Failure':'Create User Unsuccessful In Dao - File'},400
+            return {'Failure':'User Creation Unsuccessful In Dao - File'},500
 
     def add_item_to_cart(self,data):
         try:
@@ -68,7 +100,7 @@ class File(Dao):
                 json.dump(item_list,f)
             return {'Success':'Added Item To Cart'},200
         except:
-            return {'Failure':'Unable to add to Item to Cart In Dao - File'},400
+            return {'Failure':'Unable to add to Item to Cart In Dao - File'},500
 
     def get_cart(self,data):
         try:
@@ -90,8 +122,9 @@ class File(Dao):
                                 cart['total'] += float(cart_item['item']['qnty']) * item['price']
             return cart,200
         except:
-            return {'Failure':'Unable to add to Item to Cart In Dao - File'},400
+            return {'Failure':'Unable to add to Item to Cart In Dao - File'},500
 
+    #Get all Items in the File
     def get_items(self):
         try:
             all_items = []
@@ -99,9 +132,27 @@ class File(Dao):
                 all_items = json.load(f)
             return all_items
         except:
-            return {'Failure':'Unable To Retrieve All Items List In Dao - File'},400
+            return {'Failure':'Unable To Retrieve All Items List In Dao - File'},500
             
+    def get_users(self):
+        try:
+            all_users = []
+            with open(self.dir +"user.json",'r') as f:
+                all_users = json.load(f)
+            return all_users
+        except:
+            return {'Failure':'Unable To Retrieve All Users List In Dao - File'},500
 
+    def get_locations(self):
+        try:
+            all_locations = []
+            with open(self.dir +"location.json",'r') as f:
+                all_locations = json.load(f)
+            return all_locations
+        except:
+            return {'Failure':'Unable To Retrieve All Items List In Dao - File'},500
+
+    #Get all items from a specific seller/chef
     def get_items_from_seller(self,data):
         try:
             seller_items = {}
@@ -122,7 +173,7 @@ class File(Dao):
             print(e)
         except: 
             pass
-        return {'Failure':'Unable To Retrieve User Item List In Dao - File'},400
+        return {'Failure':'Unable To Retrieve User Item List In Dao - File'},500
 
 
     def get_item(self,data):
@@ -134,30 +185,10 @@ class File(Dao):
             for item in itemslist:
                 if int(item.get("itemid")) == int(itemid):
                     return item, 200
-            return {"Failure":"item with id {} not found".format(itemid)},400
+            return {"Failure":"item with id {} not found".format(itemid)},500
         except:
-            return {"Failure":"Unable to Get items"}, 400
+            return {"Failure":"Unable to Get items"}, 500
 
-    def create_item(self, data):
-        try:
-            itemsList = []
-            with open(self.dir + "item.json",'r') as f:
-                try:
-                    itemsList = json.load(f)
-                except ValueError:
-                    print("[!] Warning item.json is empty")
-                    itemsList = []
-                for item in itemsList:
-                    if data.get("itemid")  == item.get("itemid"):
-                        # print("[!] Error: itemid NOT UNIQUE")
-                        return {"Failure":"Itemid not unique"}, 400
-
-            itemsList.append(data)
-            with open(self.dir + "item.json",'w') as f:
-                json.dump(itemsList,f)
-            return data, 200
-        except:
-            return {"Failure":"Read/write failure"}, 400
 
     def create_order(self,data):
         try:
@@ -173,7 +204,7 @@ class File(Dao):
                 json.dump(orders,f)
             return {'Success':'Order Created'},200
         except:
-            return {'Failure':'Order Creation Unsuccessful In Dao - File'},400
+            return {'Failure':'Order Creation Unsuccessful In Dao - File'},500
 
     def process_payment(self):
         # This should just query the database and return the proper information to the payment class
