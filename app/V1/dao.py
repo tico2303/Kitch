@@ -22,7 +22,7 @@ class Dao(object):
     def create_location(self,data):
         raise NotImplementedError
 
-    def get_locations_by_radius(self,data):
+    def get_users_by_location_radius(self,data):
         raise NotImplementedError
 
     def get_users(self):
@@ -211,6 +211,37 @@ class File(Dao):
         print("Processed Payment")
         return {'Sucess':'Payment Processed'},200
 
+    def get_users_by_location_radius(self,data):
+        source = data.get("source")
+        radius = data.get("radius")
+        locationsList = []
+        with open(self.dir +"location.json") as f:
+            locationsList = json.load(f)
+        addrs = []
+        for location in locationsList:
+            print("location: ", location)
+            addrs.append(self._convert_to_address(location))
+        loc_serv = LocationService(source, addrs)
+
+        return {}
+
+    def _convert_to_address(self,location_obj):
+        # print("location object: ", location_obj)
+        if location_obj.get("apt","") != "":
+            addr = (location_obj.get("street") +
+                   " apt "+location_obj.get("apt","")+
+                   location_obj.get("city") + ", "+
+                   location_obj.get("state") + " " +
+                   str(location_obj.get("zip",""))
+                   )
+
+        addr = (location_obj.get("street") +" "+
+               location_obj.get("city") + ", "+
+               location_obj.get("state") + " " +
+               str(location_obj.get("zip",""))
+               )
+        return addr
+
 
 # Database class that reads and writes to kitch.db in database dir
 class Database(Dao):
@@ -261,7 +292,8 @@ class Database(Dao):
         return Location.query.all()
 
 
-    def get_location_by_radius(self,data):
+    # currently returns list of locations
+    def get_users_by_location_radius(self,data):
         locs = db.session.query(Location).all()
         locs_list = [loc.address + " " + loc.city + ", " + loc.state + ", " + str(loc.zipcode) for loc in locs]
         loc_service = LocationService(data.get('source'),locs_list)

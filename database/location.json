@@ -1,7 +1,7 @@
 [
     {
         "id":123,
-        "userid":100,
+        "user_id":100,
         "lng":"None",
         "lat":"None",
         "street":"950 w. linden st.",
@@ -12,7 +12,7 @@
     },
     {
         "id":124,
-        "userid":101,
+        "user_id":101,
         "lng":"None",
         "lat":"None",
         "street":"1133 w. Blaine ave.",

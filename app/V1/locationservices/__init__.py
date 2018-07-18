@@ -4,6 +4,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import os
 import usaddress as uaddr
+from math import sin, cos, sqrt, atan2, radians
 
 # API_KEY = os.environ.get('GOOGLE_API_KEY')
 API_KEY = "AIzaSyCljSfU86qvpoo6XplCgvRvON47rA_91vw"
@@ -80,11 +81,11 @@ def parse_addr(addr):
 class LocationService(object):
 
     def __init__(self,source,*args):
-        print("API_KEY:", API_KEY)
+        # print("API_KEY:", API_KEY)
         self.addrmapper = AddressMapper()
         self.gmaps = googlemaps.Client(key=API_KEY)
         self.source = self.addrmapper.parse(source)
-        print(self.source)
+        print("source address: ", self.source)
         self.addrList = list(*args)
         self.distances = {}
         self.durations = {}
@@ -150,7 +151,24 @@ class LocationService(object):
             print("\n\n\n")
         pp.pprint(place_results['results'][0])
 
+    #gets the distance in 
+    def get_lat_lng_distance(self, lat1, lng1, lat2, lng2, units="miles"):
+        earths_radius_km = 6371
+        lat1 = radians(lat1)
+        lng1 = radians(lng1)
+        lat2 = radians(lat2)
+        lng2 = radians(lng2)
+        delta_lng = lng2 -lng1
+        delta_lat = lat2 -lat1
+        a = sin(delta_lat/2)**2 + cos(lat1) * cos(lat2) * sin(delta_lng/2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1-a))
+        distance = earths_radius_km * c
+        if units == "miles":
+            distance = distance * 0.62137
+        return round(distance, 3)
 
+class GeoCoder(object):
+    pass
 if __name__ == "__main__":
     import pprint
     pp = pprint.PrettyPrinter()
@@ -171,5 +189,7 @@ if __name__ == "__main__":
     """
     print("\n\n")
     pp.pprint(ls.get_addr_by_radius(radius=17))
+    print("should be 422.74 kilometers: ", ls.get_lat_lng_distance(32.9697, -96.80322, 29.46786,-98.53506))
+
     # ls.get_places("mexican in riverside, ca")
 

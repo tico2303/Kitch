@@ -120,8 +120,9 @@ class LocationList(Resource):
         parser.add_argument('radius', type=int)
         args = parser.parse_args()
         source_addr = args['source']
-        radius = args['radius']
-        return Dao.get_locations_by_radius(args)['locations']
+        if args['radius'] is None:
+            args['radius'] = 10
+        return Dao.get_users_by_location_radius(args)
 
 
 @api.route('/item')
