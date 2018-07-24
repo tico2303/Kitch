@@ -1,22 +1,7 @@
 from __future__ import print_function
 import json
-import inspect
-from sqlalchemy.sql import exists
-from flask_sqlalchemy import SQLAlchemy
-# from searchservices import FileSearcher
-# from locationservices import LocationService
-
-"""
-Pretty print in for debugging
-"""
-import pprint
-p = pprint.PrettyPrinter()
-
-def pprint(*args, **kwargs):
-    p.pprint(*args,**kwargs)
-
-class Dao(object):
-    pass
+# from sqlalchemy.sql import exists
+# from flask_sqlalchemy import SQLAlchemy
 
 class Serializer(object):
 
@@ -30,6 +15,7 @@ class Serializer(object):
     def _print_all_attrs(self,obj):
         print(obj.__dict__)
 
+#///////////// User  ////////////
 class User(Serializer):
 
     def __init__(self,Accessor):
@@ -56,6 +42,7 @@ class User(Serializer):
     def __str__(self):
         return "User"
 
+#///////////// Item  ////////////
 class Item(Serializer):
 
     def __init__(self,Accessor):
@@ -87,6 +74,7 @@ class Item(Serializer):
     def __str__(self):
         return "Item"
 
+#///////////// Location  ////////////
 class Location(Serializer):
 
     def __init__(self,Accessor):
@@ -113,9 +101,10 @@ class Location(Serializer):
     def __str__(self):
         return "Location"
 
+#///////////// Order  ////////////
 class Order(Serializer):
 
-    def __init__(self):
+    def __init__(self, Accessor):
         self.seller_id = None
         self.is_done = None
         self.qnty = None
@@ -133,6 +122,7 @@ class Order(Serializer):
     def __str__(self):
         return "Order"
 
+#///////////// Cart  ////////////
 class Cart(Serializer):
     def __init__(self, Accessor):
         self.user_id = None
@@ -149,6 +139,7 @@ class Cart(Serializer):
         self._data_to_obj(self,data)
         self.accessor.write(self)
 
+#///////////// Payment ////////////
 class Payment(Serializer):
     def __init__(self, Accessor):
         self.accessor = Accessor
@@ -159,8 +150,6 @@ class Payment(Serializer):
     def __str__(self):
         return "Payment"
 
-class Searcher(Serializer):
-    pass
 #///////////// DAO ////////////
 class Dao(object):
     def __init__(self,Accessor):
@@ -251,7 +240,7 @@ class File(Accessor):
                 temp[k] = v
         return temp
 
-# Database class that reads and writes to kitch.db in database dir
+#///////////////// Database ///////////////
 class Database(Accessor):
     def __init__(self):
         self._type = self
@@ -264,31 +253,14 @@ class Database(Accessor):
 
 
 if __name__ == "__main__":
-    # f = Database()
-    f = File()
-    # data = {"seller":100}
-    # f.read(Item(),**data)
-
-    # item = Item()
-    # item.item_id = 456
-    # item.description = "Testing New DB abstraction"
-    # item.ingredients = ["great", "things"]
-    # item.price = 9.99
-    # item.name = "Item-o-ramma"
-    # item.seller = 101
-    # print(item.__dict__)
-    # f.write(item)
     user2 = {"lname": "Straction", "id": "44", "fname": "Abby", "email": "Obscure@yahoo.com"}
     item2 = {"item_id": 777, "description": "added via new Dao interface!", "ingredients": ["cool 1"], "price": 99.99, "seller": 100, "name": "New Dao created item"}
 
-    # cart2 = {"user_id"
-    dao = Dao(Accessor(f))
+    access = File()
+    dao = Dao(access)
     print(dao.create_item(item2))
     print(dao.create_user(user2))
     print(dao.get_users())
     print(dao.get_item({"item_id":222}))
     print(dao.get_items())
-    # print(dao.get_cart(cart2))
-    # print(d.get_items_from_seller({"id":100}))
-    # access = Accessor().connect(File())
-    # dao = access.session()
+
