@@ -3,7 +3,7 @@ from flask import jsonify, Blueprint
 from flask import jsonify
 from flask_restplus import Resource, Api, reqparse
 # from app.V1.dao import Database
-from app.V1.dao import File
+from app.V1.dao import *
 from paymentservices import *
 from searchservices import *
 from locationservices import LocationService
@@ -13,8 +13,8 @@ v1 = Blueprint('v1', __name__, url_prefix='/api/v1')
 api = Api(v1, version='1.0', title="Kitch API", description="Documentation for Kitch RESTful API version 1.0")
 
 apimodel = ApiModel(api)
-Dao = File()
-Dao.test_file_read()
+access = File()
+Dao = Dao(access)
 
 #Eventually, this will allow us to use other packages with such as Stripe.
 Payment = DaoPayment(Dao)
@@ -22,29 +22,26 @@ Payment = DaoPayment(Dao)
 #Eventually, this will allow us to use other packages with such as Elastic Search.
 Searcher = FileSearcher(Dao)
 
-@api.route('/users')
+@api.route('/user')
 class UsersList(Resource):
 
         @api.response(200, 'Success', apimodel.user_list_model())
         # api.doc defines parameters that can be entered in localhost-web interface (swagger)
         @api.doc(params={
-                'id':'User Id',
-                'email':'Email address',
-                'fname':'First Name',
-                'lname':"Last Name"})
+                'id':'User Id'
+                })
         # ensures that the format of the get request follows the model
         @api.marshal_with(apimodel.user_list_format())
         def get(self):
             print("GET called on users endpoint")
             parser = reqparse.RequestParser()
-            parser.add_argument('id', type=str)
+            parser.add_argument('id', type=int)
             args = parser.parse_args()
 
             if args['id'] is None:
                 return {'ValueError':'Invalid userId'},500
-
-            userlist = Dao.get_users()
-            return userlist,200
+            user = Dao.get_user(args)
+            return user,200
 
         @api.expect(apimodel.user_list_format())
         def post(self):
@@ -63,7 +60,7 @@ class UserItems(Resource):
         # ensures that the format of the get request follows the model
         def get(self):
             parser = reqparse.RequestParser()
-            parser.add_argument('id', type=str)
+            parser.add_argument('id', type=int)
             args = parser.parse_args()
             if args['id'] is None:
                 return {'ValueError':'Invalid User ID'},500
@@ -71,7 +68,7 @@ class UserItems(Resource):
 
 
 #Add an Item to A Buyers Cart or Get a User Cart
-@api.route('/cart')
+# @api.route('/cart')
 class Cart(Resource):
         @api.response(200, 'Success', apimodel.cart_response_model())
         @api.response(500, 'Failure')
@@ -81,7 +78,7 @@ class Cart(Resource):
                 })
         def get(self):
             parser = reqparse.RequestParser()
-            parser.add_argument('user_id', type=str)
+            parser.add_argument('user_id', type=int)
             args = parser.parse_args()
             if args['user_id'] is None:
                 return {'ValueError':'Invalid User ID'},500
@@ -135,7 +132,7 @@ class ItemsList(Resource):
     @api.marshal_with(apimodel.item_list_format())
     def get(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('itemid', type=str)
+        parser.add_argument('item_id', type=int)
         args = parser.parse_args()
         return Dao.get_item(args)
 
@@ -165,6 +162,7 @@ class Search(Resource):
         parser.add_argument('user', type=str)
         args = parser.parse_args()
         return Searcher.search_by_chef(args)
+
 
 @api.route('/search/food_type')
 class Search(Resource):
@@ -205,7 +203,7 @@ class Search(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('location', type=str)
         args = parser.parse_args()
-        return Searcher.search_by_location(args)
+        # return Searcher.search_by_location(args)
 
 
 #This Route will Create 1 order object provided neccessary information.

@@ -1,23 +1,105 @@
 from __future__ import print_function
-from app import db
-from app.V1.models import User, Location,Item
 import json
+import inspect
 from sqlalchemy.sql import exists
-from locationservices import LocationService
+from flask_sqlalchemy import SQLAlchemy
+# from searchservices import FileSearcher
+# from locationservices import LocationService
+
+"""
+Pretty print in for debugging
+"""
+import pprint
+p = pprint.PrettyPrinter()
+
+def pprint(*args, **kwargs):
+    p.pprint(*args,**kwargs)
 
 class Dao(object):
+    pass
+
+class Serializer(object):
+
+    def _data_to_obj(self,obj, data):
+        for k in self._get_matching_keys(obj.__dict__, data):
+            obj.__dict__[k] = data[k]
+
+    def _get_matching_keys(self,dic1,dic2):
+        return set(dic1.keys()).intersection(dic2.keys())
+
+    def _print_all_attrs(self,obj):
+        print(obj.__dict__)
+
+class User(Serializer):
+
+    def __init__(self,Accessor):
+        self.id = None
+        self.fname = None
+        self.lname = None
+        self.email = None
+        self.accessor = Accessor
 
     def create_user(self,data):
-        raise NotImplementedError
+        self._data_to_obj(self,data)
+        if len(self.accessor.read(self, id=self.id)) != 0:
+            return {"Failure":"User id not unique"}, 500
+        return self.accessor.write(self)
+
+    def get_users(self):
+        return self.accessor.read(self)
+
+    def get_user(self,data):
+        print("data:", data)
+        self._data_to_obj(self,data)
+        return self.accessor.read(self, id=self.id)
+
+    def __str__(self):
+        return "User"
+
+class Item(Serializer):
+
+    def __init__(self,Accessor):
+        self.item_id = None
+        self.description = None
+        self.ingredients = []
+        self.price = None
+        self.name = None
+        self.seller = None
+        self.accessor = Accessor
 
     def create_item(self, data):
-        raise NotImplementedError
+        self._data_to_obj(self,data)
+        if len(self.accessor.read(self, item_id=self.item_id)) != 0:
+            return {"Failure":"Itemid is not unique"}, 500
+        return self.accessor.write(self)
 
-    def add_item_to_cart(data):
-        raise NotImplementedError
+    def get_items_from_seller(self,data):
+        self._data_to_obj(self,data)
+        return self.accessor.read(self,seller=data.get("id"))
 
     def get_item(self,data):
-        raise NotImplementedError
+        self._data_to_obj(self,data)
+        return self.accessor.read(self,item_id=self.item_id)
+
+    def get_items(self):
+        return self.accessor.read(self)
+
+    def __str__(self):
+        return "Item"
+
+class Location(Serializer):
+
+    def __init__(self,Accessor):
+        self.id = None
+        self.user_id = None
+        self.lng = None
+        self.lat = None
+        self.street = None
+        self.apt = None
+        self.city = None
+        self.state = None
+        self.zip = None
+        self.accessor = Accessor
 
     def create_location(self,data):
         raise NotImplementedError
@@ -25,302 +107,188 @@ class Dao(object):
     def get_users_by_location_radius(self,data):
         raise NotImplementedError
 
-    def get_users(self):
+    def get_locations(self):
+        return self.accessor.read(self)
+
+    def __str__(self):
+        return "Location"
+
+class Order(Serializer):
+
+    def __init__(self):
+        self.seller_id = None
+        self.is_done = None
+        self.qnty = None
+        self.item_id = None
+        self.is_in_progress = None
+        self.is_delivery = None
+        self.buyer_id = None
+        self.is_pickup = None
+        self.accessor = Accessor
+
+    def create_order(self,data):
+        self._data_to_obj(self,data)
+        return self.accessor.write(self)
+
+    def __str__(self):
+        return "Order"
+
+class Cart(Serializer):
+    def __init__(self, Accessor):
+        self.user_id = None
+        self.items = []
+        self.total = None
+        self.buyer_id = None
+        self.accessor = Accessor
+
+    def get_cart(self, data):
+        self._data_to_obj(self,data)
+        # items = self.accessor.read("Item")
+
+    def add_item_to_cart(self, data):
+        self._data_to_obj(self,data)
+        self.accessor.write(self)
+
+class Payment(Serializer):
+    def __init__(self, Accessor):
+        self.accessor = Accessor
+
+    def process_payment(self):
+        return {"Success":"payment processed... implement process_paymen"},200
+
+    def __str__(self):
+        return "Payment"
+
+class Searcher(Serializer):
+    pass
+#///////////// DAO ////////////
+class Dao(object):
+    def __init__(self,Accessor):
+        self.dao = [User, Item, Location, Order, Payment, Cart]
+        self.accessor = Accessor.connect()
+
+    def __getattr__(self, method):
+        try:
+            for obj in self.dao:
+                if hasattr(obj,method) and callable(getattr(obj,method)):
+                    return getattr(obj(self.accessor),method)
+        except AttributeError:
+            print("AttributeError: method {} doesn't exit".format(method))
+
+#///////////// Accessor ////////////
+class Accessor(object):
+    def __init__(self,type):
+        self._type = type
+
+    def connect(self,type=None):
+        if type is not None:
+            self._type = type
+        if isinstance(self._type, File):
+            return File()
+        if isinstance(self._type, Database):
+            return Database()
+
+    def read(self, obj, **constraint):
         raise NotImplementedError
 
-# Mock data Class reads and writes data from json files in database dir
-class File(Dao):
+    def write(self, obj):
+        raise NotImplementedError
+
+#///////////// File ////////////
+class File(Accessor):
+
     def __init__(self):
         import os.path as path
         import sys
         self.dir = path.abspath(path.join(__file__,"../../.."))+"/database/"
-        print("Data file directory: ", self.dir)
+        self._type = self
 
-    def test_file_read(self):
-        # print("\n\n\n[~] Testing File Read\n\n\n")
-        # data = None
-        # with open(self.dir +"item.json",'r') as f:
-            # data = json.load(f)
-        #print("Data: ", data)
-        pass
+    def read(self, obj, **constraint):
+        data = None
+        results = []
+        with open(self.dir + str(obj).lower()+'.json','r') as f:
+            data = json.load(f)
+        if constraint:
+            for line in data:
+                if self._is_meeting_constraint(line, constraint):
+                    results.append(line)
+        else:
+            results = data
 
-    def create_item(self, data):
-        try:
-            items = []
-            with open(self.dir + "item.json",'r') as f:
-                try:
-                    items = json.load(f)
-                except ValueError:
-                    print("[!] Warning item.json is empty")
-                    items = []
-                for item in items:
-                    if data.get("itemid")  == item.get("itemid"):
-                        # print("[!] Error: itemid NOT UNIQUE")
-                        return {"Failure":"Itemid not unique"}, 500
-            items.append(data)
-            with open(self.dir + "item.json",'w') as f:
-                json.dump(items,f)
-            return {'Success':'Item Created'},200
-        except:
-            return {'Failure':'Item Creation Unsuccessful In Dao - File'},500
-
-    def create_user(self,data):
-        try:
-            users = []
-            with open(self.dir +"user.json",'r') as f:
-                try:
-                    users = json.load(f)
-                except ValueError:
-                    print("[!] Warning item.json is empty")
-                    users = []
-                for user in users:
-                    if data.get("id")  == user.get("id"):
-                        # print("[!] Error: itemid NOT UNIQUE")
-                        return {"Failure":"User id not unique"}, 500
-            users.append(data)
-            with open(self.dir + "user.json",'w') as f:
-                json.dump(users,f)
-            return {'Success':'User Created'},200
-        except:
-            return {'Failure':'User Creation Unsuccessful In Dao - File'},500
-
-    def add_item_to_cart(self,data):
-        try:
-            item_list = []
-            with open(self.dir +"cart.json",'r') as f:
-                try:
-                    item_list = json.load(f)
-                except ValueError as e:
-                    print("Warning - Cart Was Maybe Empty printing error: ", e)
-                    print("Proceeding With An Empty Cart List")
-                    item_list = []
-                print("Item List: \n", item_list)
-            item_list.append(data)
-            with open(self.dir +"cart.json",'w') as f:
-                json.dump(item_list,f)
-            return {'Success':'Added Item To Cart'},200
-        except:
-            return {'Failure':'Unable to add to Item to Cart In Dao - File'},500
-
-    def get_cart(self,data):
-        try:
-            cart = {}
-            cart['user_id'] = data['user_id']
-            cart['items'] = []
-            cart['total'] = 0
-            items = []
-            print("Data: \n", data)
-            with open(self.dir +"item.json",'r') as f2:
-                items = json.load(f2)
-            with open(self.dir +"cart.json",'r') as f:
-                carts = json.load(f)
-                for cart_item in carts:
-                    if cart_item['buyer_id'] == data['user_id']:
-                        cart['items'].append(cart_item)
-                        for item in items:
-                            if item['itemid'] == cart_item['item']['item_id']:
-                                cart['total'] += float(cart_item['item']['qnty']) * item['price']
-            return cart,200
-        except:
-            return {'Failure':'Unable to add to Item to Cart In Dao - File'},500
-
-    #Get all Items in the File
-    def get_items(self):
-        try:
-            all_items = []
-            with open(self.dir +"item.json",'r') as f:
-                all_items = json.load(f)
-            return all_items
-        except:
-            return {'Failure':'Unable To Retrieve All Items List In Dao - File'},500
-            
-    def get_users(self):
-        try:
-            all_users = []
-            with open(self.dir +"user.json",'r') as f:
-                all_users = json.load(f)
-            return all_users
-        except:
-            return {'Failure':'Unable To Retrieve All Users List In Dao - File'},500
-
-    def get_locations(self):
-        try:
-            all_locations = []
-            with open(self.dir +"location.json",'r') as f:
-                all_locations = json.load(f)
-            return all_locations
-        except:
-            return {'Failure':'Unable To Retrieve All Items List In Dao - File'},500
-
-    #Get all items from a specific seller/chef
-    def get_items_from_seller(self,data):
-        try:
-            seller_items = {}
-            seller_items["items"] = []
-            with open(self.dir +"item.json",'r') as f:
-                all_items = json.load(f)
-                print("All Items:", all_items)
-                for item in all_items:
-                    print("Current Item: ", item)
-                    if int(item['seller']) == int(data['id']):
-                        seller_items["items"].append(item)
-                        print("Item Added To List")
-            print("Seller Items:", seller_items)
-            return seller_items,200
-        except ValueError as e:
-            print(e)
-        except TypeError as e:
-            print(e)
-        except: 
-            pass
-        return {'Failure':'Unable To Retrieve User Item List In Dao - File'},500
-
-
-    def get_item(self,data):
-        itemslist = []
-        try:
-            with open(self.dir +"item.json",'r') as f:
-                itemslist = json.load(f)
-            itemid = data.get("itemid")
-            for item in itemslist:
-                if int(item.get("itemid")) == int(itemid):
-                    return item, 200
-            return {"Failure":"item with id {} not found".format(itemid)},500
-        except:
-            return {"Failure":"Unable to Get items"}, 500
-
-
-    def create_order(self,data):
-        try:
-            orders = []
-            with open(self.dir + "order.json",'r') as f:
-                try:
-                    orders = json.load(f)
-                except ValueError:
-                    print("[!] Warning orders.json is empty")
-                    orders = []
-            orders.append(data)
-            with open(self.dir + "order.json",'w') as f:
-                json.dump(orders,f)
-            return {'Success':'Order Created'},200
-        except:
-            return {'Failure':'Order Creation Unsuccessful In Dao - File'},500
-
-    def process_payment(self):
-        # This should just query the database and return the proper information to the payment class
-        print("Processed Payment")
-        return {'Sucess':'Payment Processed'},200
-
-    def get_users_by_location_radius(self,data):
-        source = data.get("source")
-        radius = data.get("radius")
-        locationsList = []
-        with open(self.dir +"location.json") as f:
-            locationsList = json.load(f)
-        addrs = []
-        for location in locationsList:
-            print("location: ", location)
-            addrs.append(self._convert_to_address(location))
-        loc_serv = LocationService(source, addrs)
-
-        return {}
-
-    def _convert_to_address(self,location_obj):
-        # print("location object: ", location_obj)
-        if location_obj.get("apt","") != "":
-            addr = (location_obj.get("street") +
-                   " apt "+location_obj.get("apt","")+
-                   location_obj.get("city") + ", "+
-                   location_obj.get("state") + " " +
-                   str(location_obj.get("zip",""))
-                   )
-
-        addr = (location_obj.get("street") +" "+
-               location_obj.get("city") + ", "+
-               location_obj.get("state") + " " +
-               str(location_obj.get("zip",""))
-               )
-        return addr
-
-
-# Database class that reads and writes to kitch.db in database dir
-class Database(Dao):
-
-    def create_user(self,data):
-        fname = data.get('fname','')
-        lname = data.get('lname','')
-        email = data.get('email','')
-        if db.session.query(User).filter_by(email=email).scalar() is not None:
-            return {'ValidationError':'Email aready exists emails must be Unique'}
-        user = User(fname=fname,lname=lname,email=email)
-        db.session.add(user)
-        db.session.commit()
-        res = User.query.filter(User.id == user.id).first()
-        return res
-
-    def add_item_to_cart(data):
-        pass
-
-    def create_item(self,data):
-        pass
-
-
-    def get_items(self,data):
-        return Item.query.all()
-
-
-    def get_user(self,data):
-        pass
-
-
-    def get_users(self):
-        return User.query.all()
-
-
-    def create_location(self,new_location):
-        address = new_location['address']
-        city = new_location['city']
-        state = new_location['state']
-        zipcode = new_location['zip']
-        location = Location(address=address,city=city,state=state,zipcode=zipcode)
-        db.session.add(location)
-        db.session.commit()
-        result = Location.query.filter(Location.id == location.id).first()
-        print("result: ", result.city)
-
-    def get_locations(self,):
-        return Location.query.all()
-
-
-    # currently returns list of locations
-    def get_users_by_location_radius(self,data):
-        locs = db.session.query(Location).all()
-        locs_list = [loc.address + " " + loc.city + ", " + loc.state + ", " + str(loc.zipcode) for loc in locs]
-        loc_service = LocationService(data.get('source'),locs_list)
-        res = loc_service.get_addr_by_radius(data.get('radius'))
-        results = {"locations":[]}
-        # TODO:
-        #   consider moving all formating to LocationService class such that
-        #   get_addr_by_radius returns properly formatted data
-        for destinations in res:
-            temp = {}
-            for i,(k,v) in enumerate(destinations.items()):
-                if k == "destination":
-                    addr = {}
-                    addr['address'] = v.get("fulladdress")
-                    addr['city'] = v.get("city")
-                    addr['state'] = v.get("state")
-                    addr['zipcode'] = v.get("zipcode")
-                    if not temp:
-                        temp = {}
-                    temp['source']=addr
-                    temp['id'] = db.session.query(Location).filter_by(address=v.get("fulladdress")).first().id
-                else:
-                    if not temp:
-                        temp = {}
-                    temp['distance'] = v
-                if (i+1)%2 == 0:
-                    results['locations'].append(temp)
-                    temp = {}
         return results
 
+    def write(self, obj):
+        existing_data = []
+        try:
+            with open(self.dir + str(obj).lower() +'.json', 'r') as f:
+                existing_data = json.load(f)
+            existing_data.append(self._remove_accessor(obj.__dict__))
+        except ValueError:
+            print("[!] File.write() ERROR: Could not open {} for reading ".format(file.lower()+".json"))
+            return {"Failure":"{} not written, Error in read".format(str(obj))}, 500
+        try:
+            with open(self.dir +str(obj).lower() +'.json', 'w') as f:
+                json.dump(existing_data,f)
+        except ValueError:
+            print("[!] File.write() ERROR: Could not open {} for writing\n".format(file.lower()+".json"))
+            return {"Failure":"{} not written, Error in write".format(str(obj))}, 500
+
+        return {"Success":"{} was successfully written".format(str(obj))}, 200
+
+    def _get_matching_keys(self,dic1,dic2):
+        return set(dic1.keys()).intersection(dic2.keys())
+
+    def _is_meeting_constraint(self,line, constraint):
+        for k in self._get_matching_keys(line, constraint):
+            if line[k] != constraint[k]:
+                return False
+        return True
+
+    def _remove_accessor(self,obj):
+        temp = {}
+        for k, v in obj.items():
+            if k.lower() != "accessor":
+                temp[k] = v
+        return temp
+
+# Database class that reads and writes to kitch.db in database dir
+class Database(Accessor):
+    def __init__(self):
+        self._type = self
+
+    def read(self, obj, **constraint):
+        pass
+
+    def write(self, obj):
+        pass
+
+
+if __name__ == "__main__":
+    # f = Database()
+    f = File()
+    # data = {"seller":100}
+    # f.read(Item(),**data)
+
+    # item = Item()
+    # item.item_id = 456
+    # item.description = "Testing New DB abstraction"
+    # item.ingredients = ["great", "things"]
+    # item.price = 9.99
+    # item.name = "Item-o-ramma"
+    # item.seller = 101
+    # print(item.__dict__)
+    # f.write(item)
+    user2 = {"lname": "Straction", "id": "44", "fname": "Abby", "email": "Obscure@yahoo.com"}
+    item2 = {"item_id": 777, "description": "added via new Dao interface!", "ingredients": ["cool 1"], "price": 99.99, "seller": 100, "name": "New Dao created item"}
+
+    # cart2 = {"user_id"
+    dao = Dao(Accessor(f))
+    print(dao.create_item(item2))
+    print(dao.create_user(user2))
+    print(dao.get_users())
+    print(dao.get_item({"item_id":222}))
+    print(dao.get_items())
+    # print(dao.get_cart(cart2))
+    # print(d.get_items_from_seller({"id":100}))
+    # access = Accessor().connect(File())
+    # dao = access.session()
