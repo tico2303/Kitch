@@ -1,9 +1,12 @@
 from __future__ import print_function
 from flask import Flask
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 
 
 app = Flask(__name__)
+CORS(app)
+
 app.config.from_object('settings')
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 

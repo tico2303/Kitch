@@ -1,0 +1,29 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "proxy": {
+    "/api/v1/*": {
+      "target": "http://localhost:5000"
+    }
+  },
+  "dependencies": {
+    "google-maps-react": "^2.0.2",
+    "nodemon": "^1.18.3",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-scripts": "1.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "client": "nodemon index.js",
+    "server": "source ../env/bin/activate && python ../run.py",
+    "dev": "concurrently \" npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "concurrently": "^3.6.1"
+  }
+}
