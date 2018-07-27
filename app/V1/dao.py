@@ -55,6 +55,7 @@ class Item(Serializer):
         self.seller = None
         self.lat = None
         self.lng = None
+        self.img = None
         self.accessor = Accessor
 
     def create_item(self, data):
@@ -273,7 +274,7 @@ class File(Accessor):
             return {"Failure":"{} not written, Error in read".format(str(obj))}, 500
         try:
             with open(self.dir +str(obj).lower() +'.json', 'w') as f:
-                json.dump(existing_data,f)
+                json.dump(existing_data,f, indent=2, separators={',',':'})
         except ValueError:
             print("[!] File.write() ERROR: Could not open {} for writing\n".format(file.lower()+".json"))
             return {"Failure":"{} not written, Error in write".format(str(obj))}, 500

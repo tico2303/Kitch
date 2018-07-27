@@ -228,7 +228,7 @@ class Search(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('location', type=str)
         args = parser.parse_args()
-        # return Searcher.search_by_location(args)
+        return Searcher.search_by_location(args)
 
 
 #This Route will Create 1 order object provided neccessary information.

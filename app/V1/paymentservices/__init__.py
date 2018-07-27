@@ -28,4 +28,4 @@ class DaoPayment(PaymentContract):
 
     def process_payment(self):
         return self.Dao.process_payment()
-        
+
