@@ -1,5 +1,7 @@
 from __future__ import print_function
 import json
+from locationservices import LocationService
+import sys
 # from sqlalchemy.sql import exists
 # from flask_sqlalchemy import SQLAlchemy
 
@@ -35,7 +37,6 @@ class User(Serializer):
         return self.accessor.read(self)
 
     def get_user(self,data):
-        print("data:", data)
         self._data_to_obj(self,data)
         return self.accessor.read(self, id=self.id)
 
@@ -52,12 +53,15 @@ class Item(Serializer):
         self.price = None
         self.name = None
         self.seller = None
+        self.lat = None
+        self.lng = None
         self.accessor = Accessor
 
     def create_item(self, data):
         self._data_to_obj(self,data)
         if len(self.accessor.read(self, item_id=self.item_id)) != 0:
             return {"Failure":"Itemid is not unique"}, 500
+        self._set_lat_lng()
         return self.accessor.write(self)
 
     def get_items_from_seller(self,data):
@@ -70,6 +74,37 @@ class Item(Serializer):
 
     def get_items(self):
         return self.accessor.read(self)
+
+    def get_items_by_radius(self,data):
+        #data has lat, lng and radius, number_of_results
+        number_of_results = int(data.get("number_of_results",10))
+        radius = int(data.get("radius",20))
+        self._data_to_obj(self,data)
+        items = self.accessor.read(self)
+        results = []
+        loc_serv = LocationService()
+        for item in items:
+            dist = int(loc_serv.get_lat_lng_distance(self.lat, self.lng, item.get("lat"), item.get("lng")))
+            if dist <= radius:
+                results.append(item)
+        if number_of_results > len(results):
+            return results
+        return results[:number_of_results-1]
+
+
+    def _set_lat_lng(self):
+        if not self._is_lat_lng_set():
+            location = self.accessor.read("Location",user_id=self.seller)
+            if len(location) == 1:
+                self.lat = location[0]["lat"]
+                self.lng = location[0]["lng"]
+            else:
+                print("\n\n[!]Item::_set_lat_lng Error: lat and lng of Item could not be set\n\n")
+
+    def _is_lat_lng_set(self):
+        if self.lat == None or self.lng == None:
+            return False
+        return (self.lat != 0 or self.lng != 0)
 
     def __str__(self):
         return "Item"
@@ -90,10 +125,26 @@ class Location(Serializer):
         self.accessor = Accessor
 
     def create_location(self,data):
-        raise NotImplementedError
+        loc_serv = LocationService()
+        geometry = loc_serv.get_lat_lng(loc_serv.convert_to_address(data))
+        data['lat'],data['lng'] = geometry['lat'],geometry['lng']
+        self._data_to_obj(self,data)
+        self.accessor.write(self)
 
     def get_users_by_location_radius(self,data):
-        raise NotImplementedError
+        loc_serv = LocationService()
+        geometry = loc_serv.get_lat_lng(data["source"])
+        data['lat'],data['lng'] = geometry['lat'],geometry['lng']
+        self._data_to_obj(self,data)
+        locations = self.accessor.read(self)
+        results = []
+        radius = int(data.get("radius", "20"))
+        for loc in locations:
+            dist = loc_serv.get_lat_lng_distance(self.lat, self.lng, loc.get("lat"),loc.get("lng"))
+            loc["distance"] = dist
+            if dist <= radius:
+                results.append(loc)
+        return results
 
     def get_locations(self):
         return self.accessor.read(self)
@@ -195,8 +246,13 @@ class File(Accessor):
     def read(self, obj, **constraint):
         data = None
         results = []
-        with open(self.dir + str(obj).lower()+'.json','r') as f:
-            data = json.load(f)
+        try:
+            with open(self.dir + str(obj).lower()+'.json','r') as f:
+                data = json.load(f)
+        except:
+            print("Could not open file {} for reading".format(str(obj).lower()+'.json'))
+            sys.exit()
+
         if constraint:
             for line in data:
                 if self._is_meeting_constraint(line, constraint):
