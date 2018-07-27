@@ -80,20 +80,23 @@ def parse_addr(addr):
 
 class LocationService(object):
 
-    def __init__(self,source,*args):
+    # def __init__(self,source=None,*args):
+    def __init__(self):
         # print("API_KEY:", API_KEY)
         self.addrmapper = AddressMapper()
         self.gmaps = googlemaps.Client(key=API_KEY)
-        self.source = self.addrmapper.parse(source)
-        print("source address: ", self.source)
-        self.addrList = list(*args)
+        # self.source = self.addrmapper.parse(source)
+        # if len(list(*args)) > 0:
+        #     self.addrList = list(*args)
+        # else:
+        self.addrList = []
         self.distances = {}
         self.durations = {}
         #reverse distance hashmap
         self.rev_dist = {}
         self.geo_addrList = []
-        self.get_distances()
-
+        # self.get_distances()
+    """
     def add_address(self,addr):
         self.addrList.append(addr)
 
@@ -132,7 +135,7 @@ class LocationService(object):
                 temp = {}
                 temp[(source,dest)] = eval_dist(dist)
                 temp["destination"] = self.addrmapper.parse(dest)
-                results.append(temp) 
+                results.append(temp)
         return results
 
     def get_directions(self, dest):
@@ -150,14 +153,37 @@ class LocationService(object):
             pp.pprint("Rating: "+ str(res['rating']))
             print("\n\n\n")
         pp.pprint(place_results['results'][0])
+    """
+    def convert_to_address(self,location_obj):
+        if location_obj.get("apt","") != "":
+            addr = (location_obj.get("street") +
+                   " apt "+location_obj.get("apt","")+
+                   str(location_obj.get("city","")) + ", "+
+                   str(location_obj.get("state","")) + " " +
+                   str(location_obj.get("zip",""))
+                   )
+        addr = (location_obj.get("street","") +" "+
+               location_obj.get("city","") + ", "+
+               location_obj.get("state","") + " " +
+               str(location_obj.get("zip",""))
+               )
+        return addr
+
+    def get_lat_lng(self, address):
+        result = self.gmaps.geocode(address)
+        return result[0]["geometry"]["location"]
 
     #gets the distance in 
     def get_lat_lng_distance(self, lat1, lng1, lat2, lng2, units="miles"):
+        print("lat1", lat1)
+        print("lng1", lng1)
+        print("lat2", lat2)
+        print("lng2", lng2)
         earths_radius_km = 6371
-        lat1 = radians(lat1)
-        lng1 = radians(lng1)
-        lat2 = radians(lat2)
-        lng2 = radians(lng2)
+        lat1 = radians(float(lat1))
+        lng1 = radians(float(lng1))
+        lat2 = radians(float(lat2))
+        lng2 = radians(float(lng2))
         delta_lng = lng2 -lng1
         delta_lat = lat2 -lat1
         a = sin(delta_lat/2)**2 + cos(lat1) * cos(lat2) * sin(delta_lng/2)**2
@@ -167,8 +193,6 @@ class LocationService(object):
             distance = distance * 0.62137
         return round(distance, 3)
 
-class GeoCoder(object):
-    pass
 if __name__ == "__main__":
     import pprint
     pp = pprint.PrettyPrinter()
@@ -180,16 +204,18 @@ if __name__ == "__main__":
     addr5 = "900 University Ave, Riverside, CA"
     addr6 = "1133 W Blaine St, Riverside, CA"
     ls = LocationService(source,[addr1,addr2,addr3, addr4, addr5,addr6])
-    pp.pprint(ls.get_distances())
+    # pp.pprint(ls.get_distances())
+    pp.pprint(ls.get_lat_lng(addr1))
+
     """
     print("Nearest locations: \n\n")
     pp.pprint(ls.get_n_nearest(3))
     print("Directions: \n")
     print(ls.get_directions(addr2))
-    """
     print("\n\n")
     pp.pprint(ls.get_addr_by_radius(radius=17))
     print("should be 422.74 kilometers: ", ls.get_lat_lng_distance(32.9697, -96.80322, 29.46786,-98.53506))
+    """
 
     # ls.get_places("mexican in riverside, ca")
 

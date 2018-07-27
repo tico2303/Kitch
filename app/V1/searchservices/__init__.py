@@ -39,6 +39,7 @@ class FileSearcher(SearchContract):
         return search_results
 
     def search_by_item(self,data):
+        
         search_item = data['item']
         items = self.Dao.get_items()
         print("All Items: \n", items)

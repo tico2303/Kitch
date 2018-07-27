@@ -51,7 +51,7 @@ class UsersList(Resource):
 #Give A User Id, Return All Items the Chef Has In the Database
 @api.route('/user/items')
 class UserItems(Resource):
-        @api.response(200, 'Success', apimodel.user_items_model())
+        @api.response(200, 'Success', apimodel.item_list_response_format())
         @api.response(500, 'Failure')
         # api.doc defines parameters that can be entered in localhost-web interface (swagger)
         @api.doc(params={
@@ -110,7 +110,7 @@ class LocationList(Resource):
     @api.doc(params={"source":"Source addresss" ,
                      "radius":"Radius from source in miles"
                      })
-    @api.marshal_with(apimodel.location_radius_response_format(),envelope="results")
+    @api.marshal_with(apimodel.location_radius_response_list())
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('source', type=str)
@@ -119,27 +119,51 @@ class LocationList(Resource):
         source_addr = args['source']
         if args['radius'] is None:
             args['radius'] = 10
-        return Dao.get_users_by_location_radius(args)
+        res = Dao.get_users_by_location_radius(args)
+        print("res of route::",res)
+        return {"locations":res}
 
 
 @api.route('/item')
 class ItemsList(Resource):
-    @api.response(200, 'Success', apimodel.item_list_format())
+    @api.response(200, 'Success', apimodel.item_format())
     @api.response(500, 'Failure')
     @api.doc(params={
                     "item_id":"the id of the item you need"
                      })
-    @api.marshal_with(apimodel.item_list_format())
+    @api.marshal_with(apimodel.item_format())
     def get(self):
         parser = reqparse.RequestParser()
         parser.add_argument('item_id', type=int)
         args = parser.parse_args()
         return Dao.get_item(args)
 
-    @api.expect(apimodel.item_list_format())
+    @api.expect(apimodel.item_format())
     @api.response(500, 'Failure', apimodel.item_failure_response())
     def post(self):
         return Dao.create_item(api.payload)
+
+@api.route('/item/radius')
+class ItemRadius(Resource):
+    @api.response(200, 'Success', apimodel.item_list_response_format())
+    @api.marshal_with(apimodel.item_list_response_format())
+    @api.doc(params={
+                    "lat":"source latitue",
+                    "lng":"source longitude",
+                    "radius":"radius from source",
+                    "number_of_results":"max number of results you want back"
+                     })
+    def get(self):
+        parser = reqparse.RequestParser()
+        parser.add_argument('lat', type=float)
+        parser.add_argument('lng', type=float)
+        parser.add_argument('radius', type=int)
+        parser.add_argument('number_of_results', type=int)
+        args = parser.parse_args()
+        res = Dao.get_items_by_radius(args)
+        res = {"items":res}
+        print("response from item/radius route: ", res)
+        return res
 
 @api.route('/checkout')
 class Checkout(Resource):
