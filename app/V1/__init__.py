@@ -64,6 +64,7 @@ class UserItems(Resource):
             args = parser.parse_args()
             if args['id'] is None:
                 return {'ValueError':'Invalid User ID'},500
+            #res = {"results": Dao.get_items_from_seller(args)}
             return Dao.get_items_from_seller(args)
 
 

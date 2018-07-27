@@ -1,1 +1,53 @@
-[{"itemid": 222, "description": "test item", "ingredients": ["ingred 1"], "price": 3.99, "seller": 100, "name": "test item"}, {"itemid": 333, "description": "another test item", "ingredients": ["ingred 1"], "price": 10.99, "seller": 101, "name": "Another test item"}]
+[
+{
+"itemid":123,
+"name":"Burrito",
+"price":10.22,
+"seller":101,
+"img":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPAWPl0CkSRh7NceYVSJlyqnUyzl2NeehhmZKPRuO8juC8uH2Jeg",
+"description":"Bean and rice tortilla",
+"ingredients":[
+                "rice",
+                "beans",
+                "tortilla"
+                ]
+},
+{
+"itemid":124,
+"name":"Sushi",
+"price":13.99,
+"seller":100,
+"img":"https://1lach6149z9u3oo5y045p0ax-wpengine.netdna-ssl.com/wp-content/uploads/2017/12/Types-of-sushi.jpg",
+"description":"Basic California roll",
+"ingredients":[
+                "rice",
+                "nori",
+                "crab meat"
+                ]
+},
+{
+"itemid":125,
+"name":"Soup",
+"price":5.99,
+"seller":101,
+"img":"https://www.onceuponachef.com/images/2012/04/asparagus-soup7-575x413.jpg",
+"description":"Homemade Chicken soup",
+"ingredients":[
+                "chicken",
+                "broth"
+                ]
+},
+{
+"itemid":126,
+"name":"tacos",
+"price":3.89,
+"seller":100,
+"img":"https://food.fnr.sndimg.com/content/dam/images/food/fullset/2010/4/26/0/FNM_060110-Weeknight-001_s4x3.jpg.rend.hgtvcom.616.462.suffix/1371591159264.jpeg",
+"description":"Fish tacos",
+"ingredients":[
+                "fish",
+                "torillas",
+                "lettuce"
+                ]
+}
+]
