@@ -30,6 +30,10 @@ class Item extends React.Component {
 
                 </div>
             </a>
+                
+                <div className="item-title">
+                    { title }
+                </div>
 
                 <div className="item-description">
                     { description }

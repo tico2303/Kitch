@@ -27,7 +27,7 @@ class SearchPage extends React.Component {
         }
 
         console.log("APP COMPONENT MOUNTED");
-        fetch(urlbuilder('item/radius',{"lat":34.023891,"lng":-117.619385,"radius":40,"number_of_results":10}))
+        fetch(urlbuilder('item/radius',{"lat":34.023891,"lng":-117.619385,"radius":10000,"number_of_results":20}))
         .then(response => {
             return response.json();
         }) // parses response to JSON
@@ -69,8 +69,6 @@ class SearchPage extends React.Component {
         </div>
 
         <div className="map">
-
-
             <SimpleMapPage items={this.state.items} zoom={11} current_center={this.state.loc} />
         </div>
 

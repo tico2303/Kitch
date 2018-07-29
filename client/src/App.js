@@ -4,7 +4,6 @@ import SearchPage from './components/searchpage';
 import {BrowserRouter, Route} from 'react-router-dom';
 import ItemPage from './components/itempage';
 
-
 class App extends Component {   
     render(){
         return(

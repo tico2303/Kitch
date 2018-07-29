@@ -46,17 +46,20 @@ class User(Serializer):
 #///////////// Item  ////////////
 class Item(Serializer):
 
-    def __init__(self,Accessor):
-        self.item_id = None
-        self.description = None
-        self.ingredients = []
-        self.price = None
-        self.name = None
-        self.seller = None
-        self.lat = None
-        self.lng = None
-        self.img = None
+    def __init__(self,Accessor,item_id=None,description=None,ingredients=[],price=None,name=None,seller=None,lat=None,lng=None,img='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTH7FTp359RY_zPlTUYLiXXFHT9SUldCoqiMC_p2Byt3_I79obw'):
+        self.item_id = item_id
+        self.description = description
+        self.ingredients = ingredients
+        self.price = price
+        self.name = name
+        self.seller = seller
+        self.lat = lat
+        self.lng = lng
+        self.img = img
         self.accessor = Accessor
+
+    def store(self):
+        return self.accessor.write(self)
 
     def create_item(self, data):
         self._data_to_obj(self,data)
@@ -248,6 +251,9 @@ class File(Accessor):
         data = None
         results = []
         try:
+            print("Dir: ", self.dir)
+            print("Obj: ", str(obj))
+            print("Full: ", self.dir + str(obj).lower()+'.json')
             with open(self.dir + str(obj).lower()+'.json','r') as f:
                 data = json.load(f)
         except:
@@ -265,21 +271,25 @@ class File(Accessor):
 
     def write(self, obj):
         existing_data = []
-        try:
-            with open(self.dir + str(obj).lower() +'.json', 'r') as f:
-                existing_data = json.load(f)
-            existing_data.append(self._remove_accessor(obj.__dict__))
-        except ValueError:
-            print("[!] File.write() ERROR: Could not open {} for reading ".format(file.lower()+".json"))
-            return {"Failure":"{} not written, Error in read".format(str(obj))}, 500
-        try:
-            with open(self.dir +str(obj).lower() +'.json', 'w') as f:
-                json.dump(existing_data,f, indent=2, separators={',',':'})
-        except ValueError:
-            print("[!] File.write() ERROR: Could not open {} for writing\n".format(file.lower()+".json"))
-            return {"Failure":"{} not written, Error in write".format(str(obj))}, 500
+        #try:
+        with open(self.dir + str(obj).lower() +'.json', 'r') as f:
+            existing_data = json.load(f)
 
-        return {"Success":"{} was successfully written".format(str(obj))}, 200
+        existing_data.append(self._remove_accessor(obj.__dict__))
+        # print("Existing Data After Appending", existing_data)
+        #except ValueError:
+            # print("[!] File.write() ERROR: Could not open {} for reading ".format(file.lower()+".json"))
+        # print("Error in File write while reading")
+        # return {"Failure":"{} not written, Error in read".format(str(obj))}, 500
+        # try:
+        with open(self.dir +str(obj).lower() +'.json', 'w') as f:
+            json.dump(existing_data,f, indent=2)
+        # except ValueError:
+            # print("[!] File.write() ERROR: Could not open {} for writing\n".format(file.lower()+".json"))
+            # print("Error in File write while writing")
+            # return {"Failure":"{} not written, Error in write".format(str(obj))}, 500
+
+        # return {"Success":"{} was successfully written".format(str(obj))}, 200
 
     def _get_matching_keys(self,dic1,dic2):
         return set(dic1.keys()).intersection(dic2.keys())
